@@ -1,0 +1,90 @@
+# Cost-LLM Model Registry & Pricing Specification
+# Single source of truth shared across Router Core (Member A) and Model Gateway (Member B)
+version: "1.0.0"
+updated_at: "2026-09-18"
+
+models:
+  # -------------------------------------------------------------
+  # Local Tier (Zero marginal API cost, runs on local Ollama daemon)
+  # -------------------------------------------------------------
+  llama3.1:8b:
+    tier: "local"
+    provider: "ollama"
+    context_window: 131072
+    cost_per_1m_in: 0.000000
+    cost_per_1m_out: 0.000000
+    default_timeout_s: 60.0
+    aliases:
+      - "llama3.1"
+      - "llama-3.1-8b"
+      - "llama3"
+
+  # -------------------------------------------------------------
+  # Cheap / Mid-Tier Hosted (Low token cost, high speed)
+  # -------------------------------------------------------------
+  gpt-4o-mini:
+    tier: "cheap"
+    provider: "openai"
+    context_window: 128000
+    cost_per_1m_in: 0.150000
+    cost_per_1m_out: 0.600000
+    default_timeout_s: 30.0
+    aliases:
+      - "openai/gpt-4o-mini"
+
+  claude-3-5-haiku:
+    tier: "cheap"
+    provider: "anthropic"
+    context_window: 200000
+    cost_per_1m_in: 0.800000
+    cost_per_1m_out: 4.000000
+    default_timeout_s: 30.0
+    aliases:
+      - "anthropic/claude-3-5-haiku"
+      - "claude-haiku"
+
+  gemini-1.5-flash:
+    tier: "cheap"
+    provider: "google"
+    context_window: 1048576
+    cost_per_1m_in: 0.075000
+    cost_per_1m_out: 0.300000
+    default_timeout_s: 30.0
+    aliases:
+      - "google/gemini-1.5-flash"
+      - "gemini-flash"
+
+  # -------------------------------------------------------------
+  # Premium / Frontier Hosted (Ceiling & Baseline comparison tier)
+  # -------------------------------------------------------------
+  gpt-4o:
+    tier: "premium"
+    provider: "openai"
+    context_window: 128000
+    cost_per_1m_in: 2.500000
+    cost_per_1m_out: 10.000000
+    default_timeout_s: 45.0
+    aliases:
+      - "openai/gpt-4o"
+
+  claude-3-5-sonnet:
+    tier: "premium"
+    provider: "anthropic"
+    context_window: 200000
+    cost_per_1m_in: 3.000000
+    cost_per_1m_out: 15.000000
+    default_timeout_s: 45.0
+    aliases:
+      - "anthropic/claude-3-5-sonnet"
+      - "claude-sonnet"
+
+  gemini-1.5-pro:
+    tier: "premium"
+    provider: "google"
+    context_window: 2097152
+    cost_per_1m_in: 1.250000
+    cost_per_1m_out: 5.000000
+    default_timeout_s: 45.0
+    aliases:
+      - "google/gemini-1.5-pro"
+      - "gemini-pro"
