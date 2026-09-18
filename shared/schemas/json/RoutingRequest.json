@@ -1,0 +1,129 @@
+{
+  "$defs": {
+    "SubtaskPrompt": {
+      "additionalProperties": true,
+      "description": "Optional decomposed subtask provided directly by caller or generated during routing.",
+      "properties": {
+        "subtask_id": {
+          "description": "Unique identifier for the subtask",
+          "title": "Subtask Id",
+          "type": "string"
+        },
+        "prompt": {
+          "description": "Prompt text specific to this subtask",
+          "title": "Prompt",
+          "type": "string"
+        },
+        "context": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Optional inherited or parent context",
+          "title": "Context"
+        }
+      },
+      "required": [
+        "subtask_id",
+        "prompt"
+      ],
+      "title": "SubtaskPrompt",
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "description": "Contract A: Caller payload sent to Router Core.",
+  "properties": {
+    "request_id": {
+      "description": "Unique identifier for the caller request (UUID recommended)",
+      "title": "Request Id",
+      "type": "string"
+    },
+    "user_id": {
+      "description": "Identifier of caller or tenant for rate limiting and billing",
+      "title": "User Id",
+      "type": "string"
+    },
+    "prompt": {
+      "description": "Raw text prompt submitted by user",
+      "title": "Prompt",
+      "type": "string"
+    },
+    "subtasks": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/SubtaskPrompt"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Optional pre-split subtasks. If null or empty, Router Core splits if required.",
+      "title": "Subtasks"
+    },
+    "max_cost_usd": {
+      "anyOf": [
+        {
+          "minimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Optional budget ceiling in USD for servicing this entire request",
+      "title": "Max Cost Usd"
+    },
+    "quality_floor": {
+      "anyOf": [
+        {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Minimum acceptable quality threshold between 0.0 and 1.0",
+      "title": "Quality Floor"
+    },
+    "override_model": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Caller-forced model identifier (bypasses routing classifier if provided)",
+      "title": "Override Model"
+    },
+    "metadata": {
+      "additionalProperties": true,
+      "description": "Arbitrary metadata (e.g. client app, tags, telemetry)",
+      "title": "Metadata",
+      "type": "object"
+    }
+  },
+  "required": [
+    "request_id",
+    "user_id",
+    "prompt"
+  ],
+  "title": "RoutingRequest",
+  "type": "object"
+}

@@ -1,0 +1,21 @@
+name: "Member D: Benchmarking & Cost-Quality Evaluation"
+about: "Workstream tracking for shadow baseline cost modeling, quality delta evaluation, and analytics"
+title: "[WORKSTREAM] Member D: Benchmarking & Cost-Quality Evaluation"
+labels: ["workstream", "member-d", "benchmark"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Workstream Assignment: Member D
+        **Branch:** `feature/benchmark`
+        **Package:** `benchmark/`
+  - type: checkboxes
+    attributes:
+      label: Deliverables
+      options:
+        - label: "Baseline Cost Calculator (shadow cost for always-strongest model e.g. GPT-4o)"
+        - label: "Cost Savings Percentage Calculator (`((baseline - router) / baseline) * 100`)"
+        - label: "Objective Quality Evaluation Engine (LLM-as-a-judge / heuristic scoring 0.0-1.0)"
+        - label: "Quality Delta Measurement (`router_quality_score - baseline_quality_score`)"
+        - label: "Benchmark Ingestion & Persistence (`BenchmarkRecord` store & analytics endpoints)"
+        - label: "Comprehensive unit tests in `benchmark/tests/`"

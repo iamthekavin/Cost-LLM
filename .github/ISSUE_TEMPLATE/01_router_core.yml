@@ -1,0 +1,20 @@
+name: "Member A: Router Core & Task Decomposition"
+about: "Workstream tracking for Router Core, Complexity Classifier, and Task Splitter/Merger"
+title: "[WORKSTREAM] Member A: Router Core & Task Decomposition"
+labels: ["workstream", "member-a", "router-core"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Workstream Assignment: Member A
+        **Branch:** `feature/router-core`
+        **Package:** `router-core/`
+  - type: checkboxes
+    attributes:
+      label: Deliverables
+      options:
+        - label: "Complexity Scoring Engine (0.0 - 1.0, ReasoningDepth enum)"
+        - label: "Task Decomposition (detect & split compound requests into subtasks)"
+        - label: "Routing Policy Matcher (local tier vs cheap vs premium with cost/quality caps)"
+        - label: "Result Merger & Synthesis (concurrent dispatch to Model Gateway and output assembly)"
+        - label: "Comprehensive unit and integration tests in `router-core/tests/`"

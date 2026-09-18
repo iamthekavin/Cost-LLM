@@ -1,0 +1,61 @@
+name: Cost-LLM CI
+
+on:
+  push:
+    branches:
+      - main
+      - feature/**
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-packages:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "Shared Contracts"
+            package: "shared"
+            test_path: "shared/tests"
+          - name: "Router Core (Member A)"
+            package: "router-core"
+            test_path: "router-core/tests"
+          - name: "Model Gateway (Member B)"
+            package: "model-gateway"
+            test_path: "model-gateway/tests"
+          - name: "Control Plane (Member C)"
+            package: "control-plane"
+            test_path: "control-plane/tests"
+          - name: "Benchmark Engine (Member D)"
+            package: "benchmark"
+            test_path: "benchmark/tests"
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff pytest pytest-asyncio
+          pip install -e shared
+          if [ -f ${{ matrix.package }}/requirements.txt ]; then
+            pip install -r ${{ matrix.package }}/requirements.txt
+          fi
+
+      - name: Lint Package (${{ matrix.name }})
+        run: |
+          ruff check ${{ matrix.package }}
+
+      - name: Run Unit Tests (${{ matrix.name }})
+        run: |
+          pytest ${{ matrix.test_path }}

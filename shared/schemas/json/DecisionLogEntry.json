@@ -1,0 +1,315 @@
+{
+  "$defs": {
+    "ModelCallResult": {
+      "additionalProperties": true,
+      "description": "Contract C: Model Gateway execution output per subtask.",
+      "properties": {
+        "subtask_id": {
+          "description": "Identifier corresponding to the executed subtask",
+          "title": "Subtask Id",
+          "type": "string"
+        },
+        "model_used": {
+          "description": "Actual model that completed the execution",
+          "title": "Model Used",
+          "type": "string"
+        },
+        "tokens_in": {
+          "default": 0,
+          "description": "Prompt/input token count",
+          "minimum": 0,
+          "title": "Tokens In",
+          "type": "integer"
+        },
+        "tokens_out": {
+          "default": 0,
+          "description": "Completion/output token count",
+          "minimum": 0,
+          "title": "Tokens Out",
+          "type": "integer"
+        },
+        "latency_ms": {
+          "default": 0.0,
+          "description": "End-to-end execution latency in milliseconds",
+          "minimum": 0.0,
+          "title": "Latency Ms",
+          "type": "number"
+        },
+        "cost_usd": {
+          "default": 0.0,
+          "description": "Calculated monetary cost in USD",
+          "minimum": 0.0,
+          "title": "Cost Usd",
+          "type": "number"
+        },
+        "raw_output": {
+          "description": "Model generated text response",
+          "title": "Raw Output",
+          "type": "string"
+        },
+        "error": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Error message if execution failed",
+          "title": "Error"
+        }
+      },
+      "required": [
+        "subtask_id",
+        "model_used",
+        "raw_output"
+      ],
+      "title": "ModelCallResult",
+      "type": "object"
+    },
+    "ModelTier": {
+      "description": "Model tier representing cost/capability profile.",
+      "enum": [
+        "local",
+        "cheap",
+        "premium"
+      ],
+      "title": "ModelTier",
+      "type": "string"
+    },
+    "OverrideDetails": {
+      "additionalProperties": true,
+      "description": "Metadata regarding manual or policy overrides.",
+      "properties": {
+        "is_overridden": {
+          "default": false,
+          "description": "Whether an override took place",
+          "title": "Is Overridden",
+          "type": "boolean"
+        },
+        "overridden_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Actor or policy name (e.g. user, admin, rate-limit-policy)",
+          "title": "Overridden By"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Explanation for manual override",
+          "title": "Reason"
+        },
+        "original_model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Model that router originally selected",
+          "title": "Original Model"
+        }
+      },
+      "title": "OverrideDetails",
+      "type": "object"
+    },
+    "ReasoningDepth": {
+      "description": "Reasoning depth required for a prompt or subtask.",
+      "enum": [
+        "trivial",
+        "moderate",
+        "deep"
+      ],
+      "title": "ReasoningDepth",
+      "type": "string"
+    },
+    "RoutingDecision": {
+      "additionalProperties": true,
+      "description": "Contract B: Router Core decision for each (sub)task.",
+      "properties": {
+        "request_id": {
+          "description": "Parent request identifier",
+          "title": "Request Id",
+          "type": "string"
+        },
+        "subtask_id": {
+          "description": "Identifier for this specific subtask",
+          "title": "Subtask Id",
+          "type": "string"
+        },
+        "subtask_text": {
+          "description": "Actual text sent to the chosen model",
+          "title": "Subtask Text",
+          "type": "string"
+        },
+        "complexity_score": {
+          "description": "Estimated reasoning complexity between 0.0 (trivial) and 1.0 (frontier deep reasoning)",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Complexity Score",
+          "type": "number"
+        },
+        "reasoning_depth": {
+          "$ref": "#/$defs/ReasoningDepth",
+          "description": "Categorical reasoning depth (trivial, moderate, deep)"
+        },
+        "chosen_model": {
+          "description": "Identifier of model selected for execution (e.g., llama3.1:8b, gpt-4o-mini, gpt-4o)",
+          "title": "Chosen Model",
+          "type": "string"
+        },
+        "chosen_tier": {
+          "$ref": "#/$defs/ModelTier",
+          "description": "Tier of the chosen model (local, cheap, premium)"
+        },
+        "routing_reason": {
+          "description": "Short human-readable rationale explaining why this model/tier was selected",
+          "title": "Routing Reason",
+          "type": "string"
+        },
+        "fallback_model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Designated secondary model if chosen_model times out or fails",
+          "title": "Fallback Model"
+        },
+        "overridden_by_user": {
+          "default": false,
+          "description": "True if an explicit user or admin override dictated chosen_model",
+          "title": "Overridden By User",
+          "type": "boolean"
+        },
+        "timestamp": {
+          "description": "UTC timestamp when the routing decision was made",
+          "format": "date-time",
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "subtask_id",
+        "subtask_text",
+        "complexity_score",
+        "reasoning_depth",
+        "chosen_model",
+        "chosen_tier",
+        "routing_reason"
+      ],
+      "title": "RoutingDecision",
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "description": "Contract E: Audit log entry stored and exposed by Control Plane.",
+  "properties": {
+    "request_id": {
+      "description": "Request identifier",
+      "title": "Request Id",
+      "type": "string"
+    },
+    "subtask_id": {
+      "description": "Subtask identifier",
+      "title": "Subtask Id",
+      "type": "string"
+    },
+    "user_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Caller / tenant ID",
+      "title": "User Id"
+    },
+    "prompt_text": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Prompt or subtask text",
+      "title": "Prompt Text"
+    },
+    "routing_decision": {
+      "$ref": "#/$defs/RoutingDecision",
+      "description": "Router decision details"
+    },
+    "model_call_result": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ModelCallResult"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Model Gateway result if executed"
+    },
+    "override_details": {
+      "$ref": "#/$defs/OverrideDetails",
+      "description": "Information regarding manual or administrative overrides"
+    },
+    "client_ip": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Client IP address for security & auditing",
+      "title": "Client Ip"
+    },
+    "timestamp": {
+      "description": "UTC timestamp when log entry was persisted",
+      "format": "date-time",
+      "title": "Timestamp",
+      "type": "string"
+    }
+  },
+  "required": [
+    "request_id",
+    "subtask_id",
+    "routing_decision"
+  ],
+  "title": "DecisionLogEntry",
+  "type": "object"
+}

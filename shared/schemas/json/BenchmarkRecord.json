@@ -1,0 +1,70 @@
+{
+  "additionalProperties": true,
+  "description": "Contract F: Benchmark evaluation record comparing router vs baseline.",
+  "properties": {
+    "request_id": {
+      "description": "Evaluated request identifier",
+      "title": "Request Id",
+      "type": "string"
+    },
+    "task_category": {
+      "default": "general",
+      "description": "Category of prompt (e.g. coding, math, summarization, creative, extraction)",
+      "title": "Task Category",
+      "type": "string"
+    },
+    "router_cost_usd": {
+      "description": "Actual cost incurred using router selection",
+      "minimum": 0.0,
+      "title": "Router Cost Usd",
+      "type": "number"
+    },
+    "baseline_cost_usd": {
+      "description": "Estimated cost if the prompt had been sent to the always-strongest model",
+      "minimum": 0.0,
+      "title": "Baseline Cost Usd",
+      "type": "number"
+    },
+    "cost_savings_pct": {
+      "description": "Percentage savings: ((baseline_cost - router_cost) / baseline_cost) * 100",
+      "title": "Cost Savings Pct",
+      "type": "number"
+    },
+    "router_quality_score": {
+      "description": "Quality evaluation of router's output (0.0 to 1.0)",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Router Quality Score",
+      "type": "number"
+    },
+    "baseline_quality_score": {
+      "description": "Quality evaluation of baseline model's output (0.0 to 1.0)",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Baseline Quality Score",
+      "type": "number"
+    },
+    "quality_delta": {
+      "description": "Quality difference: (router_quality_score - baseline_quality_score)",
+      "title": "Quality Delta",
+      "type": "number"
+    },
+    "timestamp": {
+      "description": "UTC timestamp of benchmark execution",
+      "format": "date-time",
+      "title": "Timestamp",
+      "type": "string"
+    }
+  },
+  "required": [
+    "request_id",
+    "router_cost_usd",
+    "baseline_cost_usd",
+    "cost_savings_pct",
+    "router_quality_score",
+    "baseline_quality_score",
+    "quality_delta"
+  ],
+  "title": "BenchmarkRecord",
+  "type": "object"
+}

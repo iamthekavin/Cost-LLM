@@ -1,0 +1,21 @@
+name: "Member B: Model Gateway & Unified Adapter"
+about: "Workstream tracking for unified model adapter (local Ollama + hosted models) and metering"
+title: "[WORKSTREAM] Member B: Model Gateway & Unified Adapter"
+labels: ["workstream", "member-b", "model-gateway"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Workstream Assignment: Member B
+        **Branch:** `feature/model-gateway`
+        **Package:** `model-gateway/`
+  - type: checkboxes
+    attributes:
+      label: Deliverables
+      options:
+        - label: "Unified Provider Interface (`POST /v1/execute` accepting `RoutingDecision`)"
+        - label: "Local Model Adapter (Ollama client connecting to `llama3.1:8b`)"
+        - label: "Hosted Model Adapters (OpenAI, Anthropic, Google Gemini)"
+        - label: "Metering & Cost Engine (accurate token counting, $USD per 1M tokens, latency_ms)"
+        - label: "Resilience, retries, and fallback handling (`fallback_model`)"
+        - label: "Comprehensive unit tests with provider mocks in `model-gateway/tests/`"

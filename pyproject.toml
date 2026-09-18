@@ -1,0 +1,33 @@
+[tool.pytest.ini_options]
+pythonpath = [
+    ".",
+    "shared",
+    "router-core",
+    "model-gateway",
+    "control-plane",
+    "benchmark"
+]
+testpaths = [
+    "shared/tests",
+    "router-core/tests",
+    "model-gateway/tests",
+    "control-plane/tests",
+    "benchmark/tests"
+]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+exclude = [
+    ".venv",
+    "venv",
+    "__pycache__",
+    "build",
+    "dist",
+    "*.egg-info"
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]

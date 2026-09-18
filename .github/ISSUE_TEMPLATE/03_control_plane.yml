@@ -1,0 +1,20 @@
+name: "Member C: Transparency, Control & Dashboard"
+about: "Workstream tracking for audit decision logs, policy overrides, and admin UI dashboard"
+title: "[WORKSTREAM] Member C: Transparency, Control & Dashboard"
+labels: ["workstream", "member-c", "control-plane"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Workstream Assignment: Member C
+        **Branch:** `feature/control-plane`
+        **Package:** `control-plane/`
+  - type: checkboxes
+    attributes:
+      label: Deliverables
+      options:
+        - label: "Audit Logging & Persistence (SQLAlchemy SQLite/PostgreSQL for `DecisionLogEntry`)"
+        - label: "Transparency API (`GET /v1/logs/{request_id}`, filters by user/time/model)"
+        - label: "Policy & Override Engine (per-request, tenant-level, regex prompt override rules)"
+        - label: "Admin & Transparency Dashboard UI (real-time stream, cost breakdown, rule controls)"
+        - label: "Comprehensive unit and integration tests in `control-plane/tests/`"

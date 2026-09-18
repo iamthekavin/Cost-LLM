@@ -1,0 +1,69 @@
+{
+  "additionalProperties": true,
+  "description": "Contract C: Model Gateway execution output per subtask.",
+  "properties": {
+    "subtask_id": {
+      "description": "Identifier corresponding to the executed subtask",
+      "title": "Subtask Id",
+      "type": "string"
+    },
+    "model_used": {
+      "description": "Actual model that completed the execution",
+      "title": "Model Used",
+      "type": "string"
+    },
+    "tokens_in": {
+      "default": 0,
+      "description": "Prompt/input token count",
+      "minimum": 0,
+      "title": "Tokens In",
+      "type": "integer"
+    },
+    "tokens_out": {
+      "default": 0,
+      "description": "Completion/output token count",
+      "minimum": 0,
+      "title": "Tokens Out",
+      "type": "integer"
+    },
+    "latency_ms": {
+      "default": 0.0,
+      "description": "End-to-end execution latency in milliseconds",
+      "minimum": 0.0,
+      "title": "Latency Ms",
+      "type": "number"
+    },
+    "cost_usd": {
+      "default": 0.0,
+      "description": "Calculated monetary cost in USD",
+      "minimum": 0.0,
+      "title": "Cost Usd",
+      "type": "number"
+    },
+    "raw_output": {
+      "description": "Model generated text response",
+      "title": "Raw Output",
+      "type": "string"
+    },
+    "error": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Error message if execution failed",
+      "title": "Error"
+    }
+  },
+  "required": [
+    "subtask_id",
+    "model_used",
+    "raw_output"
+  ],
+  "title": "ModelCallResult",
+  "type": "object"
+}
