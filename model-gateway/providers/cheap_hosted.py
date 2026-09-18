@@ -1,7 +1,7 @@
 """Cheap / Mid-Tier Hosted Model Provider Adapter (Member B).
 
 Handles small, cost-efficient hosted models (e.g. GPT-4o-mini, Claude 3.5 Haiku, Gemini 1.5 Flash).
-Normalizes provider-specific API formats and calculates precise monetary cost from pricing.yaml.
+Normalizes provider-specific API formats and calculates precise monetary cost from shared/models.yaml.
 """
 
 import time
@@ -51,7 +51,7 @@ class CheapHostedProvider(BaseProvider):
     async def _call_openai(
         self, prompt: str, subtask_id: str, api_key: Optional[str], timeout: float, start_time: float, **params: Any
     ) -> ModelCallResult:
-        url = "https://api.openai.com/v1/chat/completions"
+        url = f"{settings.openai_base_url}/chat/completions"
         headers = {
             "Authorization": f"Bearer {api_key or 'mock-key'}",
             "Content-Type": "application/json",
@@ -68,6 +68,34 @@ class CheapHostedProvider(BaseProvider):
                 latency_ms = (time.perf_counter() - start_time) * 1000.0
 
                 if res.status_code != 200:
+                    # If unauthorized in local dev and mock mode is enabled, provide simulated output
+                    if res.status_code in (401, 403) and settings.mock_hosted and not api_key:
+                        if not self.spec:
+                            return build_normalized_result(
+                                subtask_id=subtask_id,
+                                model_used=self.model_name,
+                                tokens_in=self.estimate_tokens(prompt),
+                                tokens_out=0,
+                                latency_ms=latency_ms,
+                                cost_usd=0.0,
+                                raw_output="",
+                                error=f"Model '{self.model_name}' not found in registry",
+                            )
+                        tokens_in = self.estimate_tokens(prompt)
+                        raw_text = f"Hello from simulated {self.model_name}."
+                        tokens_out = self.estimate_tokens(raw_text)
+                        cost = self.compute_cost(tokens_in, tokens_out)
+                        return build_normalized_result(
+                            subtask_id=subtask_id,
+                            model_used=self.model_name,
+                            tokens_in=tokens_in,
+                            tokens_out=tokens_out,
+                            latency_ms=latency_ms,
+                            cost_usd=cost,
+                            raw_output=raw_text,
+                            error=None,
+                        )
+
                     return build_normalized_result(
                         subtask_id=subtask_id,
                         model_used=self.model_name,
@@ -111,7 +139,7 @@ class CheapHostedProvider(BaseProvider):
     async def _call_anthropic(
         self, prompt: str, subtask_id: str, api_key: Optional[str], timeout: float, start_time: float, **params: Any
     ) -> ModelCallResult:
-        url = "https://api.anthropic.com/v1/messages"
+        url = f"{settings.anthropic_base_url}/messages"
         headers = {
             "x-api-key": api_key or "mock-key",
             "anthropic-version": "2023-06-01",
@@ -129,6 +157,33 @@ class CheapHostedProvider(BaseProvider):
                 latency_ms = (time.perf_counter() - start_time) * 1000.0
 
                 if res.status_code != 200:
+                    if res.status_code in (401, 403) and settings.mock_hosted and not api_key:
+                        if not self.spec:
+                            return build_normalized_result(
+                                subtask_id=subtask_id,
+                                model_used=self.model_name,
+                                tokens_in=self.estimate_tokens(prompt),
+                                tokens_out=0,
+                                latency_ms=latency_ms,
+                                cost_usd=0.0,
+                                raw_output="",
+                                error=f"Model '{self.model_name}' not found in registry",
+                            )
+                        tokens_in = self.estimate_tokens(prompt)
+                        raw_text = f"Hello from simulated {self.model_name}."
+                        tokens_out = self.estimate_tokens(raw_text)
+                        cost = self.compute_cost(tokens_in, tokens_out)
+                        return build_normalized_result(
+                            subtask_id=subtask_id,
+                            model_used=self.model_name,
+                            tokens_in=tokens_in,
+                            tokens_out=tokens_out,
+                            latency_ms=latency_ms,
+                            cost_usd=cost,
+                            raw_output=raw_text,
+                            error=None,
+                        )
+
                     return build_normalized_result(
                         subtask_id=subtask_id,
                         model_used=self.model_name,
@@ -174,7 +229,7 @@ class CheapHostedProvider(BaseProvider):
         self, prompt: str, subtask_id: str, api_key: Optional[str], timeout: float, start_time: float, **params: Any
     ) -> ModelCallResult:
         key = api_key or "mock-key"
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model_name}:generateContent?key={key}"
+        url = f"{settings.gemini_base_url}/models/{self.model_name}:generateContent?key={key}"
         payload = {
             "contents": [{"parts": [{"text": prompt}]}],
             "generationConfig": {"temperature": params.get("temperature", 0.7)},
@@ -186,6 +241,33 @@ class CheapHostedProvider(BaseProvider):
                 latency_ms = (time.perf_counter() - start_time) * 1000.0
 
                 if res.status_code != 200:
+                    if res.status_code in (400, 401, 403) and settings.mock_hosted and not api_key:
+                        if not self.spec:
+                            return build_normalized_result(
+                                subtask_id=subtask_id,
+                                model_used=self.model_name,
+                                tokens_in=self.estimate_tokens(prompt),
+                                tokens_out=0,
+                                latency_ms=latency_ms,
+                                cost_usd=0.0,
+                                raw_output="",
+                                error=f"Model '{self.model_name}' not found in registry",
+                            )
+                        tokens_in = self.estimate_tokens(prompt)
+                        raw_text = f"Hello from simulated {self.model_name}."
+                        tokens_out = self.estimate_tokens(raw_text)
+                        cost = self.compute_cost(tokens_in, tokens_out)
+                        return build_normalized_result(
+                            subtask_id=subtask_id,
+                            model_used=self.model_name,
+                            tokens_in=tokens_in,
+                            tokens_out=tokens_out,
+                            latency_ms=latency_ms,
+                            cost_usd=cost,
+                            raw_output=raw_text,
+                            error=None,
+                        )
+
                     return build_normalized_result(
                         subtask_id=subtask_id,
                         model_used=self.model_name,

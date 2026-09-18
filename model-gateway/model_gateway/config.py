@@ -27,6 +27,11 @@ class GatewaySettings:
         self.anthropic_api_key: Optional[str] = os.getenv("ANTHROPIC_API_KEY")
         self.gemini_api_key: Optional[str] = os.getenv("GEMINI_API_KEY")
 
+        self.openai_base_url: str = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
+        self.anthropic_base_url: str = os.getenv("ANTHROPIC_BASE_URL", "https://api.anthropic.com/v1").rstrip("/")
+        self.gemini_base_url: str = os.getenv("GEMINI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta").rstrip("/")
+        self.mock_hosted: bool = os.getenv("MOCK_HOSTED", "true").lower() in ("1", "true", "yes")
+
         self.gateway_port: int = int(os.getenv("GATEWAY_PORT", "8002"))
         self.gateway_host: str = os.getenv("GATEWAY_HOST", "0.0.0.0")
         self.default_hosted_timeout: float = float(os.getenv("DEFAULT_HOSTED_TIMEOUT_SECONDS", "30.0"))
@@ -40,13 +45,10 @@ class GatewaySettings:
         self._load_registry()
 
     def _load_registry(self):
-        # Try paths: shared/models.yaml -> model-gateway/pricing.yaml -> relative
+        # Single canonical registry path: shared/models.yaml
         search_paths = [
             Path(__file__).resolve().parent.parent.parent / "shared" / "models.yaml",
-            Path(__file__).resolve().parent.parent / "pricing.yaml",
             Path("shared/models.yaml"),
-            Path("model-gateway/pricing.yaml"),
-            Path("pricing.yaml"),
         ]
 
         loaded_data: Optional[Dict[str, Any]] = None
