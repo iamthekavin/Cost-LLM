@@ -133,7 +133,7 @@ The built-in empirical benchmarking suite compares 4 strategies across standard 
 
 ### Installation
 ```bash
-git clone <repo-url>
+git clone https://github.com/iamthekavin/Cost-LLM.git
 cd Cost-LLM
 pip install fastapi uvicorn pydantic rich python-dotenv pytest pytest-asyncio httpx
 ```
