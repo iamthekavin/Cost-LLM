@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-[#09090b]">
+<html lang="en" class="h-full dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -43,15 +43,16 @@
       font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     }
 
-    /* Minimalist Linear-style tab activation */
-    .tab-active {
+    /* Minimalist theme-responsive nav active states */
+    .nav-btn-active {
+      background-color: #e4e4e7;
+      color: #09090b !important;
+      font-weight: 600;
+    }
+    .dark .nav-btn-active {
       background-color: #27272a !important;
       color: #fafafa !important;
-    }
-    
-    .nav-btn-active {
-      background-color: #27272a;
-      color: #fafafa;
+      font-weight: 500;
     }
 
     .page-view { display: none; }
@@ -66,54 +67,68 @@
       background: transparent;
     }
     ::-webkit-scrollbar-thumb {
-      background: #27272a;
+      background: #d4d4d8;
       border-radius: 9999px;
     }
+    .dark ::-webkit-scrollbar-thumb {
+      background: #27272a;
+    }
     ::-webkit-scrollbar-thumb:hover {
+      background: #a1a1aa;
+    }
+    .dark ::-webkit-scrollbar-thumb:hover {
       background: #3f3f46;
     }
   </style>
 </head>
-<body class="h-full overflow-hidden text-zinc-100 flex flex-col bg-[#09090b] antialiased selection:bg-indigo-500/20 selection:text-indigo-300">
+<body class="h-full overflow-hidden flex flex-col bg-zinc-50 text-zinc-900 dark:bg-[#09090b] dark:text-zinc-100 antialiased selection:bg-indigo-500/20 selection:text-indigo-500 transition-colors duration-150">
 
   <!-- ==================== TOP NAVIGATION BAR ==================== -->
-  <header class="h-14 border-b border-zinc-800 bg-[#09090b]/95 backdrop-blur z-30 flex-shrink-0 flex items-center justify-between px-5">
+  <header class="h-14 border-b border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-[#09090b]/95 backdrop-blur z-30 flex-shrink-0 flex items-center justify-between px-5 transition-colors duration-150">
     
     <!-- Left: Brand -->
     <div class="flex items-center space-x-3">
-      <div class="w-7 h-7 rounded-lg bg-zinc-100 flex items-center justify-center font-bold text-zinc-950 text-xs tracking-tight shadow-sm">
+      <div class="w-7 h-7 rounded-lg bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950 flex items-center justify-center font-bold text-xs tracking-tight shadow-sm transition-colors duration-150">
         CL
       </div>
       <div class="flex items-center space-x-2.5">
-        <span class="font-semibold text-sm tracking-tight text-zinc-100">Cost-LLM</span>
-        <span class="text-zinc-600 text-xs">/</span>
-        <span class="text-xs text-zinc-400 font-medium">Router & Control Plane</span>
-        <span class="text-[11px] font-mono font-medium px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700/60">v1.2</span>
+        <span class="font-semibold text-sm tracking-tight text-zinc-900 dark:text-zinc-100">Cost-LLM</span>
+        <span class="text-zinc-400 dark:text-zinc-600 text-xs">/</span>
+        <span class="text-xs text-zinc-500 dark:text-zinc-400 font-medium">Router & Control Plane</span>
+        <span class="text-[11px] font-mono font-medium px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700/60">v1.2</span>
       </div>
     </div>
 
     <!-- Right: Telemetry & Actions -->
-    <div class="flex items-center space-x-4 text-xs">
+    <div class="flex items-center space-x-3.5 text-xs">
       
       <!-- Hardware / Daemon Status -->
-      <div class="flex items-center space-x-2 bg-zinc-900 border border-zinc-800 px-2.5 py-1.5 rounded-md">
-        <span id="daemonDot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
-        <span class="text-zinc-400">Engine:</span>
-        <span id="headerOllamaStatus" class="font-medium text-zinc-200">Checking...</span>
+      <div class="flex items-center space-x-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-2.5 py-1.5 rounded-md transition-colors duration-150">
+        <span id="daemonDot" class="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400"></span>
+        <span class="text-zinc-500 dark:text-zinc-400">Engine:</span>
+        <span id="headerOllamaStatus" class="font-medium text-zinc-800 dark:text-zinc-200">Checking...</span>
       </div>
 
       <!-- Quick Metrics Summary -->
-      <div class="hidden md:flex items-center space-x-3 bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-md font-mono text-[11px]">
+      <div class="hidden md:flex items-center space-x-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-3 py-1.5 rounded-md font-mono text-[11px] transition-colors duration-150">
         <div>
           <span class="text-zinc-500">Savings:</span>
-          <span id="headerSavingsPct" class="font-semibold text-emerald-400 ml-1">0.0%</span>
+          <span id="headerSavingsPct" class="font-semibold text-emerald-600 dark:text-emerald-400 ml-1">0.0%</span>
         </div>
-        <span class="text-zinc-700">·</span>
+        <span class="text-zinc-300 dark:text-zinc-700">·</span>
         <div>
           <span class="text-zinc-500">Saved:</span>
-          <span id="headerSavingsUsd" class="font-semibold text-zinc-200 ml-1">$0.0000</span>
+          <span id="headerSavingsUsd" class="font-semibold text-zinc-800 dark:text-zinc-200 ml-1">$0.0000</span>
         </div>
       </div>
+
+      <!-- Theme Switcher (Dark / Light) -->
+      <button onclick="toggleTheme()" id="themeToggleBtn" class="p-1.5 rounded-md text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 transition-colors" title="Toggle theme (Light / Dark)">
+        <!-- Sun icon (shown in dark mode) -->
+        <svg id="themeIconSun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        <!-- Moon icon (shown in light mode) -->
+        <svg id="themeIconMoon" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+      </button>
 
       <!-- Quick Action -->
       <button onclick="switchPage('playground')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-3 py-1.5 rounded-md text-xs transition shadow-sm">
@@ -121,7 +136,7 @@
       </button>
 
       <!-- GitHub Link -->
-      <a href="https://github.com/iamthekavin/Cost-LLM" target="_blank" class="text-zinc-400 hover:text-zinc-200 p-1.5 rounded-md hover:bg-zinc-800 transition" title="View Source on GitHub">
+      <a href="https://github.com/iamthekavin/Cost-LLM" target="_blank" class="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 p-1.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition" title="View Source on GitHub">
         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
       </a>
     </div>
@@ -131,35 +146,35 @@
   <div class="flex-1 flex overflow-hidden">
 
     <!-- ==================== SIDEBAR ==================== -->
-    <aside class="w-56 border-r border-zinc-800 bg-[#0c0d12] flex-shrink-0 flex flex-col justify-between p-3">
+    <aside class="w-56 border-r border-zinc-200 dark:border-zinc-800 bg-zinc-100/70 dark:bg-[#0c0d12] flex-shrink-0 flex flex-col justify-between p-3 transition-colors duration-150">
       
       <div class="space-y-4">
         <!-- Main Navigation -->
         <div>
           <div class="px-2.5 mb-1.5 text-[11px] font-medium text-zinc-500 uppercase tracking-wider">Workspace</div>
           <nav class="space-y-0.5 text-xs font-medium">
-            <button onclick="switchPage('home')" id="nav-home" class="w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded-md transition text-zinc-300 hover:text-white hover:bg-zinc-800/60 nav-btn-active">
-              <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            <button onclick="switchPage('home')" id="nav-home" class="w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded-md transition text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60 nav-btn-active">
+              <svg class="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
               <span>Overview</span>
             </button>
-            <button onclick="switchPage('playground')" id="nav-playground" class="w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded-md transition text-zinc-300 hover:text-white hover:bg-zinc-800/60">
-              <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"/></svg>
+            <button onclick="switchPage('playground')" id="nav-playground" class="w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded-md transition text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60">
+              <svg class="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"/></svg>
               <span>Playground</span>
             </button>
-            <button onclick="switchPage('benchmark')" id="nav-benchmark" class="w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded-md transition text-zinc-300 hover:text-white hover:bg-zinc-800/60">
-              <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            <button onclick="switchPage('benchmark')" id="nav-benchmark" class="w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded-md transition text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60">
+              <svg class="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
               <span>Benchmarks</span>
             </button>
-            <button onclick="switchPage('audit')" id="nav-audit" class="w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded-md transition text-zinc-300 hover:text-white hover:bg-zinc-800/60">
-              <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+            <button onclick="switchPage('audit')" id="nav-audit" class="w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded-md transition text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60">
+              <svg class="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
               <span>Audit Logs</span>
             </button>
-            <button onclick="switchPage('models')" id="nav-models" class="w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded-md transition text-zinc-300 hover:text-white hover:bg-zinc-800/60">
-              <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+            <button onclick="switchPage('models')" id="nav-models" class="w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded-md transition text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60">
+              <svg class="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
               <span>Models & Rates</span>
             </button>
-            <button onclick="switchPage('settings')" id="nav-settings" class="w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded-md transition text-zinc-300 hover:text-white hover:bg-zinc-800/60">
-              <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <button onclick="switchPage('settings')" id="nav-settings" class="w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded-md transition text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60">
+              <svg class="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
               <span>Policies</span>
             </button>
           </nav>
@@ -169,79 +184,79 @@
         <div>
           <div class="px-2.5 mb-1.5 text-[11px] font-medium text-zinc-500 uppercase tracking-wider">Sample Queries</div>
           <div class="space-y-1 text-xs">
-            <button onclick="loadSample(1)" class="w-full text-left px-2.5 py-1.5 rounded-md hover:bg-zinc-800/50 text-zinc-400 hover:text-zinc-200 truncate transition flex items-center justify-between">
+            <button onclick="loadSample(1)" class="w-full text-left px-2.5 py-1.5 rounded-md hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 truncate transition flex items-center justify-between">
               <span>Entity Extraction</span>
-              <span class="text-[10px] font-mono text-emerald-400">$0.00</span>
+              <span class="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-medium">$0.00</span>
             </button>
-            <button onclick="loadSample(2)" class="w-full text-left px-2.5 py-1.5 rounded-md hover:bg-zinc-800/50 text-zinc-400 hover:text-zinc-200 truncate transition flex items-center justify-between">
+            <button onclick="loadSample(2)" class="w-full text-left px-2.5 py-1.5 rounded-md hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 truncate transition flex items-center justify-between">
               <span>Ticket Triage</span>
-              <span class="text-[10px] font-mono text-zinc-500">Tier 2</span>
+              <span class="text-[10px] font-mono text-zinc-400 dark:text-zinc-500">Tier 2</span>
             </button>
-            <button onclick="loadSample(3)" class="w-full text-left px-2.5 py-1.5 rounded-md hover:bg-zinc-800/50 text-zinc-400 hover:text-zinc-200 truncate transition flex items-center justify-between">
+            <button onclick="loadSample(3)" class="w-full text-left px-2.5 py-1.5 rounded-md hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 truncate transition flex items-center justify-between">
               <span>Python Rate Limiter</span>
-              <span class="text-[10px] font-mono text-zinc-500">Tier 3</span>
+              <span class="text-[10px] font-mono text-zinc-400 dark:text-zinc-500">Tier 3</span>
             </button>
-            <button onclick="loadSample(4)" class="w-full text-left px-2.5 py-1.5 rounded-md hover:bg-zinc-800/50 text-zinc-400 hover:text-zinc-200 truncate transition flex items-center justify-between">
+            <button onclick="loadSample(4)" class="w-full text-left px-2.5 py-1.5 rounded-md hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 truncate transition flex items-center justify-between">
               <span>Monopoly Welfare Math</span>
-              <span class="text-[10px] font-mono text-zinc-500">Tier 4</span>
+              <span class="text-[10px] font-mono text-zinc-400 dark:text-zinc-500">Tier 4</span>
             </button>
-            <button onclick="loadSample(5)" class="w-full text-left px-2.5 py-1.5 rounded-md hover:bg-zinc-800/50 text-zinc-400 hover:text-zinc-200 truncate transition flex items-center justify-between">
+            <button onclick="loadSample(5)" class="w-full text-left px-2.5 py-1.5 rounded-md hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 truncate transition flex items-center justify-between">
               <span>Compound Request</span>
-              <span class="text-[10px] font-mono text-indigo-400">Split</span>
+              <span class="text-[10px] font-mono text-indigo-600 dark:text-indigo-400 font-medium">Split</span>
             </button>
           </div>
         </div>
       </div>
 
       <!-- Footer Hardware Spec -->
-      <div class="p-2.5 rounded-lg bg-zinc-900/70 border border-zinc-800 text-[11px] font-mono space-y-1 text-zinc-400">
-        <div class="flex items-center justify-between text-zinc-300 font-semibold">
+      <div class="p-2.5 rounded-lg bg-zinc-200/60 dark:bg-zinc-900/70 border border-zinc-300 dark:border-zinc-800 text-[11px] font-mono space-y-1 text-zinc-600 dark:text-zinc-400 transition-colors duration-150">
+        <div class="flex items-center justify-between text-zinc-800 dark:text-zinc-300 font-semibold">
           <span>Local Engine</span>
-          <span class="text-emerald-400">● Live</span>
+          <span class="text-emerald-600 dark:text-emerald-400">● Live</span>
         </div>
-        <div class="text-[10px] text-zinc-400 truncate">RTX 5050 · llama3.2:3b</div>
-        <div class="text-[10px] text-zinc-500">CUDA 12.0 · $0.00 / token</div>
+        <div class="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">RTX 5050 · llama3.2:3b</div>
+        <div class="text-[10px] text-zinc-400 dark:text-zinc-500">CUDA 12.0 · $0.00 / token</div>
       </div>
 
     </aside>
 
     <!-- ==================== MAIN VIEWPORT ==================== -->
-    <main class="flex-1 overflow-y-auto p-6 space-y-6 bg-[#09090b]">
+    <main class="flex-1 overflow-y-auto p-6 space-y-6 bg-zinc-50 dark:bg-[#09090b] transition-colors duration-150">
 
       <!-- ==================== PAGE: OVERVIEW (HOME) ==================== -->
       <section id="page-home" class="page-view active space-y-6 max-w-6xl mx-auto">
         
         <!-- Header Title -->
-        <div class="border-b border-zinc-800 pb-5">
-          <h1 class="text-xl font-semibold text-zinc-100 tracking-tight">System Overview</h1>
-          <p class="text-xs text-zinc-400 mt-1">Real-time LLM cost optimization, routing policies, and hardware performance metrics.</p>
+        <div class="border-b border-zinc-200 dark:border-zinc-800 pb-5">
+          <h1 class="text-xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">System Overview</h1>
+          <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Real-time LLM cost optimization, routing policies, and hardware performance metrics.</p>
         </div>
 
         <!-- 4 Metric Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
           
-          <div class="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800">
-            <div class="text-xs font-medium text-zinc-400">Cost Reduction</div>
-            <div id="statSavingsPct" class="text-2xl font-bold text-emerald-400 font-mono mt-1">0.0%</div>
-            <div class="text-[11px] text-zinc-500 mt-1">Vs. o1-preview baseline</div>
+          <div class="p-4 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none transition-colors duration-150">
+            <div class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Cost Reduction</div>
+            <div id="statSavingsPct" class="text-2xl font-bold text-emerald-600 dark:text-emerald-400 font-mono mt-1">0.0%</div>
+            <div class="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1">Vs. o1-preview baseline</div>
           </div>
 
-          <div class="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800">
-            <div class="text-xs font-medium text-zinc-400">Cumulative Savings</div>
-            <div id="statSavingsUsd" class="text-2xl font-bold text-zinc-100 font-mono mt-1">$0.0000</div>
-            <div class="text-[11px] text-zinc-500 mt-1">Total spend avoided</div>
+          <div class="p-4 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none transition-colors duration-150">
+            <div class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Cumulative Savings</div>
+            <div id="statSavingsUsd" class="text-2xl font-bold text-zinc-900 dark:text-zinc-100 font-mono mt-1">$0.0000</div>
+            <div class="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1">Total spend avoided</div>
           </div>
 
-          <div class="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800">
-            <div class="text-xs font-medium text-zinc-400">Local Zero-Cost Tasks</div>
-            <div id="statLocalRequests" class="text-2xl font-bold text-zinc-100 font-mono mt-1">0</div>
-            <div class="text-[11px] text-zinc-500 mt-1">Processed on RTX 5050 GPU</div>
+          <div class="p-4 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none transition-colors duration-150">
+            <div class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Local Zero-Cost Tasks</div>
+            <div id="statLocalRequests" class="text-2xl font-bold text-zinc-900 dark:text-zinc-100 font-mono mt-1">0</div>
+            <div class="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1">Processed on RTX 5050 GPU</div>
           </div>
 
-          <div class="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800">
-            <div class="text-xs font-medium text-zinc-400">Total Queries Routed</div>
-            <div id="statTotalRequests" class="text-2xl font-bold text-zinc-100 font-mono mt-1">0</div>
-            <div class="text-[11px] text-zinc-500 mt-1">Across all 4 model tiers</div>
+          <div class="p-4 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none transition-colors duration-150">
+            <div class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Total Queries Routed</div>
+            <div id="statTotalRequests" class="text-2xl font-bold text-zinc-900 dark:text-zinc-100 font-mono mt-1">0</div>
+            <div class="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1">Across all 4 model tiers</div>
           </div>
 
         </div>
@@ -250,35 +265,35 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
           
           <!-- Routing Mechanics -->
-          <div class="lg:col-span-2 p-5 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-4">
+          <div class="lg:col-span-2 p-5 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none space-y-4 transition-colors duration-150">
             <div class="flex items-center justify-between">
               <div>
-                <h2 class="text-sm font-semibold text-zinc-100">Routing Decision Architecture</h2>
-                <p class="text-xs text-zinc-400 mt-0.5">How requests are evaluated, split, and dispatched across model tiers.</p>
+                <h2 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Routing Decision Architecture</h2>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">How requests are evaluated, split, and dispatched across model tiers.</p>
               </div>
-              <span class="text-[11px] font-mono text-zinc-500">Autonomous</span>
+              <span class="text-[11px] font-mono text-zinc-400 dark:text-zinc-500">Autonomous</span>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs pt-1">
-              <div class="p-3 rounded-lg bg-zinc-950 border border-zinc-800/80 space-y-1.5">
-                <div class="font-medium text-zinc-200">1. Complexity Analysis</div>
-                <p class="text-zinc-400 text-[11px] leading-relaxed">Extracts syntax features, reasoning tokens, and PII to score prompt difficulty in range [0.05, 0.99].</p>
+              <div class="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 space-y-1.5 transition-colors duration-150">
+                <div class="font-medium text-zinc-800 dark:text-zinc-200">1. Complexity Analysis</div>
+                <p class="text-zinc-500 dark:text-zinc-400 text-[11px] leading-relaxed">Extracts syntax features, reasoning tokens, and PII to score prompt difficulty in range [0.05, 0.99].</p>
               </div>
 
-              <div class="p-3 rounded-lg bg-zinc-950 border border-zinc-800/80 space-y-1.5">
-                <div class="font-medium text-zinc-200">2. Request Decomposition</div>
-                <p class="text-zinc-400 text-[11px] leading-relaxed">Splits compound prompts into isolated subtasks, routing extraction locally and reasoning to cloud.</p>
+              <div class="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 space-y-1.5 transition-colors duration-150">
+                <div class="font-medium text-zinc-800 dark:text-zinc-200">2. Request Decomposition</div>
+                <p class="text-zinc-500 dark:text-zinc-400 text-[11px] leading-relaxed">Splits compound prompts into isolated subtasks, routing extraction locally and reasoning to cloud.</p>
               </div>
 
-              <div class="p-3 rounded-lg bg-zinc-950 border border-zinc-800/80 space-y-1.5">
-                <div class="font-medium text-zinc-200">3. Result Provenance</div>
-                <p class="text-zinc-400 text-[11px] leading-relaxed">Aggregates responses with audit traces, exact token accounting, and cost comparison.</p>
+              <div class="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 space-y-1.5 transition-colors duration-150">
+                <div class="font-medium text-zinc-800 dark:text-zinc-200">3. Result Provenance</div>
+                <p class="text-zinc-500 dark:text-zinc-400 text-[11px] leading-relaxed">Aggregates responses with audit traces, exact token accounting, and cost comparison.</p>
               </div>
             </div>
 
             <!-- Empirical Curve -->
-            <div class="pt-3 border-t border-zinc-800">
-              <div class="text-xs font-medium text-zinc-300 mb-2">Quality Retention vs Strategy Cost</div>
+            <div class="pt-3 border-t border-zinc-200 dark:border-zinc-800">
+              <div class="text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-2">Quality Retention vs Strategy Cost</div>
               <div class="h-48 relative">
                 <canvas id="homeParetoChart"></canvas>
               </div>
@@ -286,56 +301,56 @@
           </div>
 
           <!-- Model Tier Quick Table -->
-          <div class="p-5 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-3.5">
-            <h2 class="text-sm font-semibold text-zinc-100">Configured Model Tiers</h2>
+          <div class="p-5 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none space-y-3.5 transition-colors duration-150">
+            <h2 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Configured Model Tiers</h2>
             
             <div class="space-y-2.5 text-xs font-mono">
-              <div class="p-2.5 rounded-lg bg-zinc-950 border border-zinc-800/80 flex items-center justify-between">
+              <div class="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between transition-colors duration-150">
                 <div>
-                  <div class="font-semibold text-zinc-200">Tier 1: Local</div>
+                  <div class="font-semibold text-zinc-800 dark:text-zinc-200">Tier 1: Local</div>
                   <div class="text-[10px] text-zinc-500">llama3.2:3b (Ollama)</div>
                 </div>
                 <div class="text-right">
-                  <div class="text-emerald-400 font-bold">$0.00</div>
-                  <div class="text-[10px] text-zinc-500">0.00 / 1M</div>
+                  <div class="text-emerald-600 dark:text-emerald-400 font-bold">$0.00</div>
+                  <div class="text-[10px] text-zinc-400 dark:text-zinc-500">0.00 / 1M</div>
                 </div>
               </div>
 
-              <div class="p-2.5 rounded-lg bg-zinc-950 border border-zinc-800/80 flex items-center justify-between">
+              <div class="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between transition-colors duration-150">
                 <div>
-                  <div class="font-semibold text-zinc-200">Tier 2: Low-Cost</div>
+                  <div class="font-semibold text-zinc-800 dark:text-zinc-200">Tier 2: Low-Cost</div>
                   <div class="text-[10px] text-zinc-500">gpt-4o-mini</div>
                 </div>
                 <div class="text-right">
-                  <div class="text-zinc-300">$0.15</div>
-                  <div class="text-[10px] text-zinc-500">0.60 / 1M</div>
+                  <div class="text-zinc-700 dark:text-zinc-300">$0.15</div>
+                  <div class="text-[10px] text-zinc-400 dark:text-zinc-500">0.60 / 1M</div>
                 </div>
               </div>
 
-              <div class="p-2.5 rounded-lg bg-zinc-950 border border-zinc-800/80 flex items-center justify-between">
+              <div class="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between transition-colors duration-150">
                 <div>
-                  <div class="font-semibold text-zinc-200">Tier 3: Balanced</div>
+                  <div class="font-semibold text-zinc-800 dark:text-zinc-200">Tier 3: Balanced</div>
                   <div class="text-[10px] text-zinc-500">gpt-4o</div>
                 </div>
                 <div class="text-right">
-                  <div class="text-zinc-300">$2.50</div>
-                  <div class="text-[10px] text-zinc-500">10.00 / 1M</div>
+                  <div class="text-zinc-700 dark:text-zinc-300">$2.50</div>
+                  <div class="text-[10px] text-zinc-400 dark:text-zinc-500">10.00 / 1M</div>
                 </div>
               </div>
 
-              <div class="p-2.5 rounded-lg bg-zinc-950 border border-zinc-800/80 flex items-center justify-between">
+              <div class="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between transition-colors duration-150">
                 <div>
-                  <div class="font-semibold text-zinc-200">Tier 4: Frontier</div>
+                  <div class="font-semibold text-zinc-800 dark:text-zinc-200">Tier 4: Frontier</div>
                   <div class="text-[10px] text-zinc-500">o1-preview (Baseline)</div>
                 </div>
                 <div class="text-right">
-                  <div class="text-zinc-400">$15.00</div>
-                  <div class="text-[10px] text-zinc-500">60.00 / 1M</div>
+                  <div class="text-zinc-600 dark:text-zinc-400">$15.00</div>
+                  <div class="text-[10px] text-zinc-400 dark:text-zinc-500">60.00 / 1M</div>
                 </div>
               </div>
             </div>
 
-            <button onclick="switchPage('models')" class="w-full text-center text-xs text-indigo-400 hover:text-indigo-300 py-1 transition font-medium">
+            <button onclick="switchPage('models')" class="w-full text-center text-xs text-indigo-600 dark:text-indigo-400 hover:underline py-1 transition font-medium">
               View Model Portfolio & Rates &rarr;
             </button>
           </div>
@@ -347,16 +362,16 @@
       <!-- ==================== PAGE: PLAYGROUND ==================== -->
       <section id="page-playground" class="page-view space-y-5 max-w-6xl mx-auto">
         
-        <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
+        <div class="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-4">
           <div>
-            <h1 class="text-xl font-semibold text-zinc-100 tracking-tight">Routing Playground</h1>
-            <p class="text-xs text-zinc-400 mt-0.5">Submit single or multi-part queries and observe how the router selects models.</p>
+            <h1 class="text-xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">Routing Playground</h1>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Submit single or multi-part queries and observe how the router selects models.</p>
           </div>
 
           <!-- Controls Toolbar -->
           <div class="flex items-center space-x-2 text-xs">
-            <span class="text-zinc-400">Policy:</span>
-            <select id="routePolicy" class="bg-zinc-900 border border-zinc-700/80 text-zinc-200 rounded-md px-2.5 py-1 text-xs outline-none focus:border-indigo-500">
+            <span class="text-zinc-500 dark:text-zinc-400">Policy:</span>
+            <select id="routePolicy" class="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700/80 text-zinc-800 dark:text-zinc-200 rounded-md px-2.5 py-1 text-xs outline-none focus:border-indigo-500 transition-colors duration-150">
               <option value="balanced" selected>Balanced (Pareto Optimal)</option>
               <option value="cost_first">Cost-First (Aggressive Local/Cheap)</option>
               <option value="quality_first">Quality-First (High Performance)</option>
@@ -371,21 +386,21 @@
           <!-- Left: Input & Tuning (5 Cols) -->
           <div class="lg:col-span-5 space-y-4">
             
-            <div class="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-3.5">
+            <div class="p-4 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none space-y-3.5 transition-colors duration-150">
               <div class="flex items-center justify-between text-xs">
-                <label for="promptInput" class="font-medium text-zinc-300">Prompt Input</label>
-                <button onclick="clearPrompt()" class="text-zinc-500 hover:text-zinc-300 text-[11px] transition">Clear</button>
+                <label for="promptInput" class="font-medium text-zinc-700 dark:text-zinc-300">Prompt Input</label>
+                <button onclick="clearPrompt()" class="text-zinc-400 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-300 text-[11px] transition">Clear</button>
               </div>
 
-              <textarea id="promptInput" rows="7" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-xs text-zinc-100 placeholder-zinc-600 focus:border-indigo-500 outline-none font-mono leading-relaxed transition" placeholder="Enter prompt here (e.g. 'Extract dates from invoice #9401' or '1. Extract email... 2. Write response...')"></textarea>
+              <textarea id="promptInput" rows="7" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-3 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 focus:border-indigo-500 outline-none font-mono leading-relaxed transition" placeholder="Enter prompt here (e.g. 'Extract dates from invoice #9401' or '1. Extract email... 2. Write response...')"></textarea>
 
               <!-- Optional Overrides Accordion -->
-              <div class="pt-3 border-t border-zinc-800/80 space-y-3 text-xs">
-                <div class="font-medium text-zinc-400 text-[11px]">Optional Admin Controls</div>
+              <div class="pt-3 border-t border-zinc-200 dark:border-zinc-800/80 space-y-3 text-xs">
+                <div class="font-medium text-zinc-500 dark:text-zinc-400 text-[11px]">Optional Admin Controls</div>
                 <div class="grid grid-cols-2 gap-2.5">
                   <div>
                     <label class="text-[11px] text-zinc-500 block mb-1">Model Override:</label>
-                    <select id="overrideModel" class="w-full bg-zinc-950 border border-zinc-800 text-zinc-300 rounded p-1.5 text-xs outline-none">
+                    <select id="overrideModel" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 rounded p-1.5 text-xs outline-none transition-colors duration-150">
                       <option value="">(Automatic Routing)</option>
                       <option value="llama3.2:3b">Tier 1: llama3.2:3b ($0.00)</option>
                       <option value="gpt-4o-mini">Tier 2: gpt-4o-mini ($0.15)</option>
@@ -395,7 +410,7 @@
                   </div>
                   <div>
                     <label class="text-[11px] text-zinc-500 block mb-1">Decomposition:</label>
-                    <select id="forceDecomp" class="w-full bg-zinc-950 border border-zinc-800 text-zinc-300 rounded p-1.5 text-xs outline-none">
+                    <select id="forceDecomp" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 rounded p-1.5 text-xs outline-none transition-colors duration-150">
                       <option value="auto">Auto-Detect</option>
                       <option value="true">Force Decompose</option>
                       <option value="false">Force Single-Task</option>
@@ -406,24 +421,24 @@
 
               <!-- Action Bar -->
               <div class="pt-3 flex gap-2 text-xs font-medium">
-                <button onclick="previewRoute()" class="px-3.5 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 transition">
+                <button onclick="previewRoute()" class="px-3.5 py-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 border border-zinc-300 dark:border-transparent transition">
                   Preview Plan
                 </button>
                 <button onclick="executeRoute()" id="btnSubmitRoute" class="flex-1 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center justify-center space-x-1.5 shadow-sm">
                   <span>Send Request</span>
-                  <span class="text-[10px] text-indigo-300 ml-1 font-mono">Ctrl+Enter</span>
+                  <span class="text-[10px] text-indigo-200 dark:text-indigo-300 ml-1 font-mono">Ctrl+Enter</span>
                 </button>
               </div>
             </div>
 
             <!-- Preview Card -->
-            <div id="previewCard" class="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-2.5 text-xs hidden">
+            <div id="previewCard" class="p-4 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none space-y-2.5 text-xs hidden transition-colors duration-150">
               <div class="flex items-center justify-between">
-                <span class="font-medium text-zinc-300">Analysis Preview</span>
-                <span id="previewScoreBadge" class="font-mono text-[11px] px-2 py-0.5 rounded bg-zinc-800 text-indigo-400">Score: 0.00</span>
+                <span class="font-medium text-zinc-800 dark:text-zinc-300">Analysis Preview</span>
+                <span id="previewScoreBadge" class="font-mono text-[11px] px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400">Score: 0.00</span>
               </div>
-              <p id="previewPlanText" class="text-zinc-400 text-xs"></p>
-              <div id="previewSubtasksList" class="space-y-1.5 pt-2 border-t border-zinc-800 text-xs font-mono"></div>
+              <p id="previewPlanText" class="text-zinc-600 dark:text-zinc-400 text-xs"></p>
+              <div id="previewSubtasksList" class="space-y-1.5 pt-2 border-t border-zinc-200 dark:border-zinc-800 text-xs font-mono"></div>
             </div>
 
           </div>
@@ -431,58 +446,58 @@
           <!-- Right: Execution Response (7 Cols) -->
           <div class="lg:col-span-7 space-y-4">
             
-            <div class="p-5 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-4">
+            <div class="p-5 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none space-y-4 transition-colors duration-150">
               
               <!-- Metrics Ribbon -->
-              <div class="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-zinc-800">
+              <div class="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-zinc-200 dark:border-zinc-800">
                 <div>
                   <div class="text-[11px] text-zinc-500 font-mono">SELECTED MODEL</div>
-                  <div id="resultModelName" class="text-sm font-semibold text-zinc-100 font-mono mt-0.5">Ready for query</div>
+                  <div id="resultModelName" class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 font-mono mt-0.5">Ready for query</div>
                 </div>
 
                 <div class="flex items-center space-x-4 font-mono text-xs">
                   <div class="text-right">
-                    <span class="text-[10px] text-zinc-500 block">ACTUAL COST</span>
-                    <span id="resultActualCost" class="font-medium text-zinc-200">$0.000000</span>
+                    <span class="text-[10px] text-zinc-400 dark:text-zinc-500 block">ACTUAL COST</span>
+                    <span id="resultActualCost" class="font-medium text-zinc-800 dark:text-zinc-200">$0.000000</span>
                   </div>
                   <div class="text-right">
-                    <span class="text-[10px] text-zinc-500 block">SAVED</span>
-                    <span id="resultSavingsPct" class="font-bold text-emerald-400">0.0%</span>
+                    <span class="text-[10px] text-zinc-400 dark:text-zinc-500 block">SAVED</span>
+                    <span id="resultSavingsPct" class="font-bold text-emerald-600 dark:text-emerald-400">0.0%</span>
                   </div>
                   <div class="text-right">
-                    <span class="text-[10px] text-zinc-500 block">LATENCY</span>
-                    <span id="resultLatency" class="text-zinc-400">0.0 ms</span>
+                    <span class="text-[10px] text-zinc-400 dark:text-zinc-500 block">LATENCY</span>
+                    <span id="resultLatency" class="text-zinc-600 dark:text-zinc-400">0.0 ms</span>
                   </div>
                 </div>
               </div>
 
               <!-- Output Display -->
               <div class="space-y-1.5">
-                <div class="flex items-center justify-between text-xs text-zinc-400">
+                <div class="flex items-center justify-between text-xs text-zinc-600 dark:text-zinc-400">
                   <span class="font-medium">Response Content</span>
-                  <button onclick="copyOutput()" id="btnCopy" class="text-zinc-500 hover:text-zinc-300 text-[11px] transition">Copy</button>
+                  <button onclick="copyOutput()" id="btnCopy" class="text-zinc-400 hover:text-zinc-800 dark:text-zinc-500 dark:hover:text-zinc-300 text-[11px] transition">Copy</button>
                 </div>
-                <div id="resultOutputContainer" class="w-full bg-zinc-950 border border-zinc-800/80 rounded-lg p-3.5 text-xs text-zinc-200 min-h-[180px] overflow-x-auto leading-relaxed font-sans">
-                  <span class="text-zinc-600 italic">Submit a prompt on the left to see live model output, token accounting, and cost savings.</span>
+                <div id="resultOutputContainer" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 rounded-lg p-3.5 text-xs text-zinc-800 dark:text-zinc-200 min-h-[180px] overflow-x-auto leading-relaxed font-sans transition-colors duration-150">
+                  <span class="text-zinc-400 dark:text-zinc-600 italic">Submit a prompt on the left to see live model output, token accounting, and cost savings.</span>
                 </div>
               </div>
 
               <!-- Subtasks Breakdown (if compound) -->
-              <div id="subtasksContainer" class="space-y-2.5 pt-3 border-t border-zinc-800 hidden">
+              <div id="subtasksContainer" class="space-y-2.5 pt-3 border-t border-zinc-200 dark:border-zinc-800 hidden">
                 <div class="flex items-center justify-between text-xs">
-                  <span class="font-medium text-zinc-300">Multi-Part Execution Plan</span>
-                  <span id="subtaskCountBadge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400">2 Parts</span>
+                  <span class="font-medium text-zinc-800 dark:text-zinc-300">Multi-Part Execution Plan</span>
+                  <span id="subtaskCountBadge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">2 Parts</span>
                 </div>
                 <div id="subtasksList" class="space-y-1.5 font-mono text-xs"></div>
               </div>
 
               <!-- Decision Explanation -->
-              <div class="p-3 rounded-lg bg-zinc-950/70 border border-zinc-800/80 space-y-1 text-xs">
-                <div class="flex items-center justify-between text-[11px] text-zinc-500 font-mono">
+              <div class="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950/70 border border-zinc-200 dark:border-zinc-800/80 space-y-1 text-xs transition-colors duration-150">
+                <div class="flex items-center justify-between text-[11px] text-zinc-400 dark:text-zinc-500 font-mono">
                   <span>DECISION PROVENANCE</span>
                   <span id="resultRequestId">req-idle</span>
                 </div>
-                <p id="resultRationale" class="text-zinc-400 text-xs leading-relaxed">
+                <p id="resultRationale" class="text-zinc-600 dark:text-zinc-400 text-xs leading-relaxed">
                   Router will evaluate prompt complexity and route to the most cost-effective capable model.
                 </p>
               </div>
@@ -497,10 +512,10 @@
 
       <!-- ==================== PAGE: BENCHMARKS ==================== -->
       <section id="page-benchmark" class="page-view space-y-6 max-w-6xl mx-auto">
-        <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
+        <div class="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-4">
           <div>
-            <h1 class="text-xl font-semibold text-zinc-100 tracking-tight">Strategy Benchmarking</h1>
-            <p class="text-xs text-zinc-400 mt-0.5">Empirical 4-strategy evaluation matrix on 10 standard enterprise workloads.</p>
+            <h1 class="text-xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">Strategy Benchmarking</h1>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Empirical 4-strategy evaluation matrix on 10 standard enterprise workloads.</p>
           </div>
           <button onclick="runBenchmarkSuite()" id="btnRunBenchmark" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-4 py-2 rounded-lg text-xs transition shadow-sm flex items-center space-x-1.5">
             <span>Execute Benchmark Suite</span>
@@ -509,15 +524,15 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
           <!-- Pareto Curve -->
-          <div class="p-5 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-3">
-            <h2 class="text-xs font-semibold text-zinc-300">Pareto Trade-off Matrix (Cost vs Quality)</h2>
+          <div class="p-5 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none space-y-3 transition-colors duration-150">
+            <h2 class="text-xs font-semibold text-zinc-800 dark:text-zinc-300">Pareto Trade-off Matrix (Cost vs Quality)</h2>
             <div class="h-60 relative">
               <canvas id="benchParetoChart"></canvas>
             </div>
           </div>
           <!-- Category Retention -->
-          <div class="p-5 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-3">
-            <h2 class="text-xs font-semibold text-zinc-300">Quality Retention by Task Domain</h2>
+          <div class="p-5 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none space-y-3 transition-colors duration-150">
+            <h2 class="text-xs font-semibold text-zinc-800 dark:text-zinc-300">Quality Retention by Task Domain</h2>
             <div class="h-60 relative">
               <canvas id="benchCategoryChart"></canvas>
             </div>
@@ -525,12 +540,12 @@
         </div>
 
         <!-- Strategy Table -->
-        <div class="p-5 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-3">
-          <h2 class="text-xs font-semibold text-zinc-300">Benchmark Performance Matrix</h2>
+        <div class="p-5 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none space-y-3 transition-colors duration-150">
+          <h2 class="text-xs font-semibold text-zinc-800 dark:text-zinc-300">Benchmark Performance Matrix</h2>
           <div class="overflow-x-auto">
             <table class="w-full text-xs font-mono text-left">
               <thead>
-                <tr class="border-b border-zinc-800 text-zinc-500 text-[11px]">
+                <tr class="border-b border-zinc-200 dark:border-zinc-800 text-zinc-500 text-[11px]">
                   <th class="py-2.5 px-3">STRATEGY</th>
                   <th class="py-2.5 px-3">TOTAL COST</th>
                   <th class="py-2.5 px-3">COST REDUCTION</th>
@@ -539,8 +554,8 @@
                   <th class="py-2.5 px-3">EFFICIENCY</th>
                 </tr>
               </thead>
-              <tbody id="benchmarkTableBody" class="divide-y divide-zinc-800/60 text-zinc-300">
-                <tr class="text-zinc-600 italic">
+              <tbody id="benchmarkTableBody" class="divide-y divide-zinc-200 dark:divide-zinc-800/60 text-zinc-700 dark:text-zinc-300">
+                <tr class="text-zinc-400 dark:text-zinc-600 italic">
                   <td colspan="6" class="py-4 text-center">Click "Execute Benchmark Suite" above to run the 4-way comparison.</td>
                 </tr>
               </tbody>
@@ -551,20 +566,20 @@
 
       <!-- ==================== PAGE: AUDIT LOGS ==================== -->
       <section id="page-audit" class="page-view space-y-5 max-w-6xl mx-auto">
-        <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
+        <div class="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-4">
           <div>
-            <h1 class="text-xl font-semibold text-zinc-100 tracking-tight">Audit Logs</h1>
-            <p class="text-xs text-zinc-400 mt-0.5">Ring-buffer audit records of all routed requests, complexity scores, and savings calculations.</p>
+            <h1 class="text-xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">Audit Logs</h1>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Ring-buffer audit records of all routed requests, complexity scores, and savings calculations.</p>
           </div>
-          <button onclick="fetchHistory()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-3 py-1.5 rounded-md text-xs font-medium transition">
+          <button onclick="fetchHistory()" class="bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 border border-zinc-300 dark:border-transparent px-3 py-1.5 rounded-md text-xs font-medium transition">
             Refresh
           </button>
         </div>
 
-        <div class="rounded-xl bg-zinc-900/60 border border-zinc-800 overflow-hidden">
+        <div class="rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none overflow-hidden transition-colors duration-150">
           <div class="overflow-x-auto">
             <table class="w-full text-xs font-mono text-left">
-              <thead class="bg-zinc-950 border-b border-zinc-800 text-zinc-500 text-[11px]">
+              <thead class="bg-zinc-100 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 text-zinc-500 text-[11px]">
                 <tr>
                   <th class="py-2.5 px-3.5">ID</th>
                   <th class="py-2.5 px-3.5">PROMPT</th>
@@ -576,9 +591,9 @@
                   <th class="py-2.5 px-3.5">TIME</th>
                 </tr>
               </thead>
-              <tbody id="auditTableBody" class="divide-y divide-zinc-800/60 text-zinc-300">
-                <tr class="text-zinc-600 italic">
-                  <td colspan="8" class="py-4 text-center">No logs retrieved yet.</td>
+              <tbody id="auditTableBody" class="divide-y divide-zinc-200 dark:divide-zinc-800/60 text-zinc-700 dark:text-zinc-300">
+                <tr class="text-zinc-400 dark:text-zinc-600 italic">
+                  <td colspan="8" class="py-4 text-center">No logs recorded yet.</td>
                 </tr>
               </tbody>
             </table>
@@ -588,9 +603,9 @@
 
       <!-- ==================== PAGE: MODELS & RATES ==================== -->
       <section id="page-models" class="page-view space-y-5 max-w-6xl mx-auto">
-        <div class="border-b border-zinc-800 pb-4">
-          <h1 class="text-xl font-semibold text-zinc-100 tracking-tight">Model Registry & Pricing Schedule</h1>
-          <p class="text-xs text-zinc-400 mt-0.5">Official model tier classification, pricing per 1M tokens, and assigned workload scopes.</p>
+        <div class="border-b border-zinc-200 dark:border-zinc-800 pb-4">
+          <h1 class="text-xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">Model Registry & Pricing Schedule</h1>
+          <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Official model tier classification, pricing per 1M tokens, and assigned workload scopes.</p>
         </div>
 
         <div id="modelsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -600,16 +615,16 @@
 
       <!-- ==================== PAGE: POLICIES & SETTINGS ==================== -->
       <section id="page-settings" class="page-view space-y-5 max-w-3xl mx-auto">
-        <div class="border-b border-zinc-800 pb-4">
-          <h1 class="text-xl font-semibold text-zinc-100 tracking-tight">Routing Policies & Governance</h1>
-          <p class="text-xs text-zinc-400 mt-0.5">Configure default routing thresholds, baseline reference model, and administrative overrides.</p>
+        <div class="border-b border-zinc-200 dark:border-zinc-800 pb-4">
+          <h1 class="text-xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">Routing Policies & Governance</h1>
+          <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Configure default routing thresholds, baseline reference model, and administrative overrides.</p>
         </div>
 
-        <div class="p-5 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-4 text-xs">
+        <div class="p-5 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none space-y-4 text-xs transition-colors duration-150">
           
           <div class="space-y-1.5">
-            <label class="font-medium text-zinc-200 block">Default Routing Policy</label>
-            <select id="settingPolicy" class="w-full bg-zinc-950 border border-zinc-800 rounded-md p-2 text-zinc-300 outline-none">
+            <label class="font-medium text-zinc-800 dark:text-zinc-200 block">Default Routing Policy</label>
+            <select id="settingPolicy" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-md p-2 text-zinc-800 dark:text-zinc-300 outline-none transition-colors duration-150">
               <option value="balanced">Balanced (Pareto Optimal: ~75–85% savings)</option>
               <option value="cost_first">Cost-First (Aggressive Local/Cheap routing)</option>
               <option value="quality_first">Quality-First (High Performance Tier)</option>
@@ -618,26 +633,26 @@
           </div>
 
           <div class="space-y-1.5">
-            <label class="font-medium text-zinc-200 block">Baseline Comparison Anchor</label>
-            <select id="settingBaseline" class="w-full bg-zinc-950 border border-zinc-800 rounded-md p-2 text-zinc-300 outline-none">
+            <label class="font-medium text-zinc-800 dark:text-zinc-200 block">Baseline Comparison Anchor</label>
+            <select id="settingBaseline" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-md p-2 text-zinc-800 dark:text-zinc-300 outline-none transition-colors duration-150">
               <option value="o1-preview" selected>OpenAI o1-preview ($15.00 prompt / $60.00 completion)</option>
               <option value="gpt-4o">OpenAI GPT-4o ($2.50 prompt / $10.00 completion)</option>
               <option value="claude-3-5-sonnet">Claude 3.5 Sonnet ($3.00 prompt / $15.00 completion)</option>
             </select>
           </div>
 
-          <div class="space-y-2.5 pt-3 border-t border-zinc-800">
+          <div class="space-y-2.5 pt-3 border-t border-zinc-200 dark:border-zinc-800">
             <label class="flex items-center space-x-2.5 cursor-pointer">
-              <input type="checkbox" id="settingDecomp" checked class="w-4 h-4 rounded bg-zinc-950 border-zinc-700 text-indigo-600 focus:ring-indigo-500">
-              <span class="text-zinc-300">Enable Automated Multi-Part Request Decomposition</span>
+              <input type="checkbox" id="settingDecomp" checked class="w-4 h-4 rounded bg-zinc-50 dark:bg-zinc-950 border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500">
+              <span class="text-zinc-700 dark:text-zinc-300">Enable Automated Multi-Part Request Decomposition</span>
             </label>
             <label class="flex items-center space-x-2.5 cursor-pointer">
-              <input type="checkbox" id="settingOverride" checked class="w-4 h-4 rounded bg-zinc-950 border-zinc-700 text-indigo-600 focus:ring-indigo-500">
-              <span class="text-zinc-300">Allow Administrative & User Model Overrides</span>
+              <input type="checkbox" id="settingOverride" checked class="w-4 h-4 rounded bg-zinc-50 dark:bg-zinc-950 border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500">
+              <span class="text-zinc-700 dark:text-zinc-300">Allow Administrative & User Model Overrides</span>
             </label>
           </div>
 
-          <div class="pt-3 border-t border-zinc-800 flex justify-end">
+          <div class="pt-3 border-t border-zinc-200 dark:border-zinc-800 flex justify-end">
             <button onclick="saveSettings()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-4 py-2 rounded-md transition shadow-sm">
               Save Configuration
             </button>
@@ -662,6 +677,79 @@
     let homeParetoChartInstance = null;
     let benchParetoChartInstance = null;
     let benchCategoryChartInstance = null;
+
+    // Theme Management (Dark / Light)
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const isDark = savedTheme ? (savedTheme === 'dark') : prefersDark;
+      setTheme(isDark ? 'dark' : 'light');
+    }
+
+    function setTheme(theme) {
+      const html = document.documentElement;
+      const sun = document.getElementById('themeIconSun');
+      const moon = document.getElementById('themeIconMoon');
+
+      if (theme === 'dark') {
+        html.classList.add('dark');
+        if (sun) sun.classList.remove('hidden');
+        if (moon) moon.classList.add('hidden');
+      } else {
+        html.classList.remove('dark');
+        if (sun) sun.classList.add('hidden');
+        if (moon) moon.classList.remove('hidden');
+      }
+      localStorage.setItem('theme', theme);
+      updateChartThemes();
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.contains('dark');
+      setTheme(isDark ? 'light' : 'dark');
+    }
+
+    function getThemeColors() {
+      const isDark = document.documentElement.classList.contains('dark');
+      return {
+        gridColor: isDark ? '#18181b' : '#e4e4e7',
+        textColor: isDark ? '#71717a' : '#71717a',
+        chartFill: isDark ? 'rgba(99, 102, 241, 0.08)' : 'rgba(99, 102, 241, 0.12)',
+        barBg: isDark ? '#27272a' : '#e4e4e7',
+        barHover: '#6366f1'
+      };
+    }
+
+    function updateChartThemes() {
+      const colors = getThemeColors();
+
+      if (homeParetoChartInstance) {
+        homeParetoChartInstance.options.scales.x.grid.color = colors.gridColor;
+        homeParetoChartInstance.options.scales.x.ticks.color = colors.textColor;
+        homeParetoChartInstance.options.scales.y.grid.color = colors.gridColor;
+        homeParetoChartInstance.options.scales.y.ticks.color = colors.textColor;
+        homeParetoChartInstance.data.datasets[0].backgroundColor = colors.chartFill;
+        homeParetoChartInstance.update();
+      }
+
+      if (benchParetoChartInstance) {
+        benchParetoChartInstance.options.scales.x.grid.color = colors.gridColor;
+        benchParetoChartInstance.options.scales.x.ticks.color = colors.textColor;
+        benchParetoChartInstance.options.scales.x.title.color = colors.textColor;
+        benchParetoChartInstance.options.scales.y.grid.color = colors.gridColor;
+        benchParetoChartInstance.options.scales.y.ticks.color = colors.textColor;
+        benchParetoChartInstance.options.scales.y.title.color = colors.textColor;
+        benchParetoChartInstance.update();
+      }
+
+      if (benchCategoryChartInstance) {
+        benchCategoryChartInstance.options.scales.y.grid.color = colors.gridColor;
+        benchCategoryChartInstance.options.scales.y.ticks.color = colors.textColor;
+        benchCategoryChartInstance.options.scales.x.ticks.color = colors.textColor;
+        benchCategoryChartInstance.data.datasets[0].backgroundColor = colors.barBg;
+        benchCategoryChartInstance.update();
+      }
+    }
 
     function switchPage(pageId) {
       document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
@@ -708,10 +796,10 @@
         const dotEl = document.getElementById('daemonDot');
         if (mData.local_daemon_active) {
           statusEl.textContent = 'Local RTX 5050 · Ready';
-          dotEl.className = 'w-2 h-2 rounded-full bg-emerald-400';
+          dotEl.className = 'w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400';
         } else {
           statusEl.textContent = 'Local Engine Starting...';
-          dotEl.className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
+          dotEl.className = 'w-2 h-2 rounded-full bg-amber-500 dark:bg-amber-400 animate-pulse';
         }
       } catch (e) {
         console.error('Error fetching metrics:', e);
@@ -744,8 +832,8 @@
         if (data.subtasks && data.subtasks.length > 0) {
           data.subtasks.forEach(st => {
             const div = document.createElement('div');
-            div.className = 'flex justify-between items-center bg-zinc-950 p-2 rounded border border-zinc-800';
-            div.innerHTML = `<span>${st.title}</span><span class="text-indigo-400 font-semibold">${st.selected_model}</span>`;
+            div.className = 'flex justify-between items-center bg-zinc-100 dark:bg-zinc-950 p-2 rounded border border-zinc-200 dark:border-zinc-800 transition-colors duration-150';
+            div.innerHTML = `<span class="text-zinc-800 dark:text-zinc-200">${st.title}</span><span class="text-indigo-600 dark:text-indigo-400 font-semibold">${st.selected_model}</span>`;
             list.appendChild(div);
           });
         }
@@ -796,7 +884,7 @@
         document.getElementById('resultRationale').textContent = data.trace.explanation;
 
         const outputContainer = document.getElementById('resultOutputContainer');
-        outputContainer.innerHTML = `<pre class="whitespace-pre-wrap font-sans text-xs text-zinc-100">${escapeHtml(data.final_output)}</pre>`;
+        outputContainer.innerHTML = `<pre class="whitespace-pre-wrap font-sans text-xs text-zinc-900 dark:text-zinc-100">${escapeHtml(data.final_output)}</pre>`;
 
         const subtasksContainer = document.getElementById('subtasksContainer');
         const subtasksList = document.getElementById('subtasksList');
@@ -808,15 +896,15 @@
 
           subtasks.forEach(st => {
             const item = document.createElement('div');
-            item.className = 'p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-mono flex items-center justify-between';
+            item.className = 'p-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-xs font-mono flex items-center justify-between transition-colors duration-150';
             item.innerHTML = `
               <div>
-                <span class="font-medium text-zinc-200">${st.title}</span>
+                <span class="font-medium text-zinc-800 dark:text-zinc-200">${st.title}</span>
                 <span class="text-zinc-500 text-[10px] block">${st.intent} (Complexity: ${st.complexity_score.toFixed(2)})</span>
               </div>
               <div class="text-right">
-                <span class="px-2 py-0.5 rounded bg-zinc-800 text-indigo-300 font-medium">${st.selected_model}</span>
-                <span class="text-[10px] text-zinc-500 block mt-0.5">${st.selected_tier}</span>
+                <span class="px-2 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-indigo-700 dark:text-indigo-300 font-medium">${st.selected_model}</span>
+                <span class="text-[10px] text-zinc-400 dark:text-zinc-500 block mt-0.5">${st.selected_tier}</span>
               </div>
             `;
             subtasksList.appendChild(item);
@@ -831,7 +919,7 @@
         alert('Router error: ' + e.message);
       } finally {
         btn.disabled = false;
-        btn.innerHTML = `<span>Send Request</span><span class="text-[10px] text-indigo-300 ml-1 font-mono">Ctrl+Enter</span>`;
+        btn.innerHTML = `<span>Send Request</span><span class="text-[10px] text-indigo-200 dark:text-indigo-300 ml-1 font-mono">Ctrl+Enter</span>`;
       }
     }
 
@@ -856,23 +944,23 @@
         data.models.forEach(m => {
           const isLoc = m.is_local;
           const card = document.createElement('div');
-          card.className = `p-4 rounded-xl bg-zinc-900/60 border ${isLoc ? 'border-emerald-500/40 bg-zinc-900/80' : 'border-zinc-800'} text-xs space-y-2.5 font-mono`;
+          card.className = `p-4 rounded-xl bg-white dark:bg-zinc-900/60 border ${isLoc ? 'border-emerald-500/50 bg-emerald-50/20 dark:bg-zinc-900/80' : 'border-zinc-200 dark:border-zinc-800'} text-xs space-y-2.5 font-mono shadow-sm dark:shadow-none transition-colors duration-150`;
           card.innerHTML = `
             <div class="flex items-center justify-between">
-              <span class="font-semibold text-zinc-100">${m.name}</span>
-              <span class="px-2 py-0.5 rounded text-[10px] font-medium uppercase ${isLoc ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/30' : 'bg-zinc-800 text-zinc-400'}">
+              <span class="font-semibold text-zinc-900 dark:text-zinc-100">${m.name}</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-medium uppercase ${isLoc ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700/60'}">
                 ${m.tier}
               </span>
             </div>
-            <p class="text-zinc-400 text-[11px] font-sans leading-relaxed">${m.description}</p>
-            <div class="pt-2.5 border-t border-zinc-800 flex justify-between items-center text-[11px]">
+            <p class="text-zinc-600 dark:text-zinc-400 text-[11px] font-sans leading-relaxed">${m.description}</p>
+            <div class="pt-2.5 border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center text-[11px]">
               <div>
-                <span class="text-zinc-500 text-[10px] block">PROMPT / 1M</span>
-                <span class="font-medium ${isLoc ? 'text-emerald-400' : 'text-zinc-200'}">$${m.prompt_per_1m.toFixed(2)}</span>
+                <span class="text-zinc-400 dark:text-zinc-500 text-[10px] block">PROMPT / 1M</span>
+                <span class="font-medium ${isLoc ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-800 dark:text-zinc-200'}">$${m.prompt_per_1m.toFixed(2)}</span>
               </div>
               <div class="text-right">
-                <span class="text-zinc-500 text-[10px] block">COMPLETION / 1M</span>
-                <span class="font-medium ${isLoc ? 'text-emerald-400' : 'text-zinc-200'}">$${m.completion_per_1m.toFixed(2)}</span>
+                <span class="text-zinc-400 dark:text-zinc-500 text-[10px] block">COMPLETION / 1M</span>
+                <span class="font-medium ${isLoc ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-800 dark:text-zinc-200'}">$${m.completion_per_1m.toFixed(2)}</span>
               </div>
             </div>
           `;
@@ -891,23 +979,23 @@
         tbody.innerHTML = '';
 
         if (!data || data.length === 0) {
-          tbody.innerHTML = '<tr class="text-zinc-500 italic"><td colspan="8" class="py-4 text-center">No logs recorded yet.</td></tr>';
+          tbody.innerHTML = '<tr class="text-zinc-400 dark:text-zinc-600 italic"><td colspan="8" class="py-4 text-center">No logs recorded yet.</td></tr>';
           return;
         }
 
         data.forEach(item => {
           const sub = item.subtasks && item.subtasks.length > 0 ? item.subtasks[0] : null;
           const tr = document.createElement('tr');
-          tr.className = 'hover:bg-zinc-800/30 transition';
+          tr.className = 'hover:bg-zinc-100/60 dark:hover:bg-zinc-800/30 transition';
           tr.innerHTML = `
-            <td class="py-2.5 px-3.5 text-zinc-400 font-mono">${item.request_id}</td>
-            <td class="py-2.5 px-3.5 max-w-xs truncate text-zinc-200" title="${escapeHtml(item.original_prompt)}">${escapeHtml(item.original_prompt)}</td>
-            <td class="py-2.5 px-3.5 text-indigo-400 font-mono">${item.overall_complexity.toFixed(2)}</td>
-            <td class="py-2.5 px-3.5 font-medium text-zinc-200">${sub ? sub.selected_model : 'aggregated'}</td>
-            <td class="py-2.5 px-3.5"><span class="px-1.5 py-0.5 rounded text-[10px] ${item.is_decomposed ? 'bg-indigo-950 text-indigo-300' : 'text-zinc-500'}">${item.is_decomposed ? 'YES' : 'NO'}</span></td>
-            <td class="py-2.5 px-3.5 text-zinc-200 font-mono">$${item.cost_summary ? item.cost_summary.total_cost_usd.toFixed(6) : '0.00'}</td>
-            <td class="py-2.5 px-3.5 font-bold text-emerald-400 font-mono">${item.cost_summary ? item.cost_summary.reduction_percentage.toFixed(1) : '0.0'}%</td>
-            <td class="py-2.5 px-3.5 text-zinc-500 text-[10px] font-mono">${item.timestamp ? item.timestamp.split('T')[1].split('.')[0] : ''}</td>
+            <td class="py-2.5 px-3.5 text-zinc-500 dark:text-zinc-400 font-mono">${item.request_id}</td>
+            <td class="py-2.5 px-3.5 max-w-xs truncate text-zinc-800 dark:text-zinc-200" title="${escapeHtml(item.original_prompt)}">${escapeHtml(item.original_prompt)}</td>
+            <td class="py-2.5 px-3.5 text-indigo-600 dark:text-indigo-400 font-mono font-medium">${item.overall_complexity.toFixed(2)}</td>
+            <td class="py-2.5 px-3.5 font-medium text-zinc-800 dark:text-zinc-200">${sub ? sub.selected_model : 'aggregated'}</td>
+            <td class="py-2.5 px-3.5"><span class="px-1.5 py-0.5 rounded text-[10px] ${item.is_decomposed ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300' : 'text-zinc-400 dark:text-zinc-500'}">${item.is_decomposed ? 'YES' : 'NO'}</span></td>
+            <td class="py-2.5 px-3.5 text-zinc-800 dark:text-zinc-200 font-mono">$${item.cost_summary ? item.cost_summary.total_cost_usd.toFixed(6) : '0.00'}</td>
+            <td class="py-2.5 px-3.5 font-bold text-emerald-600 dark:text-emerald-400 font-mono">${item.cost_summary ? item.cost_summary.reduction_percentage.toFixed(1) : '0.0'}%</td>
+            <td class="py-2.5 px-3.5 text-zinc-400 dark:text-zinc-500 text-[10px] font-mono">${item.timestamp ? item.timestamp.split('T')[1].split('.')[0] : ''}</td>
           `;
           tbody.appendChild(tr);
         });
@@ -931,14 +1019,14 @@
         const summary = data.summary_by_strategy || {};
         for (const [key, s] of Object.entries(summary)) {
           const tr = document.createElement('tr');
-          tr.className = 'hover:bg-zinc-800/30 transition';
+          tr.className = 'hover:bg-zinc-100/60 dark:hover:bg-zinc-800/30 transition';
           tr.innerHTML = `
-            <td class="py-2.5 px-3 font-semibold text-zinc-100">${s.strategy_name}</td>
-            <td class="py-2.5 px-3 text-zinc-300 font-mono">$${s.total_cost_usd.toFixed(6)}</td>
-            <td class="py-2.5 px-3 font-bold text-emerald-400 font-mono">${s.cost_reduction_pct.toFixed(1)}%</td>
-            <td class="py-2.5 px-3 text-zinc-200 font-mono">${s.avg_quality_score.toFixed(1)} / 100</td>
-            <td class="py-2.5 px-3 text-zinc-400 font-mono">${s.avg_latency_ms.toFixed(0)} ms</td>
-            <td class="py-2.5 px-3 text-indigo-400 font-mono">${s.cost_efficiency_ratio}</td>
+            <td class="py-2.5 px-3 font-semibold text-zinc-900 dark:text-zinc-100">${s.strategy_name}</td>
+            <td class="py-2.5 px-3 text-zinc-800 dark:text-zinc-300 font-mono">$${s.total_cost_usd.toFixed(6)}</td>
+            <td class="py-2.5 px-3 font-bold text-emerald-600 dark:text-emerald-400 font-mono">${s.cost_reduction_pct.toFixed(1)}%</td>
+            <td class="py-2.5 px-3 text-zinc-800 dark:text-zinc-200 font-mono">${s.avg_quality_score.toFixed(1)} / 100</td>
+            <td class="py-2.5 px-3 text-zinc-500 dark:text-zinc-400 font-mono">${s.avg_latency_ms.toFixed(0)} ms</td>
+            <td class="py-2.5 px-3 text-indigo-600 dark:text-indigo-400 font-mono">${s.cost_efficiency_ratio}</td>
           `;
           tbody.appendChild(tr);
         }
@@ -953,6 +1041,7 @@
     }
 
     function renderBenchmarkCharts(paretoPoints, categoryBreakdown) {
+      const colors = getThemeColors();
       const pCtx = document.getElementById('benchParetoChart');
       if (pCtx && paretoPoints) {
         if (benchParetoChartInstance) benchParetoChartInstance.destroy();
@@ -969,10 +1058,10 @@
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { labels: { color: '#a1a1aa', font: { size: 11, family: 'Inter' } } } },
+            plugins: { legend: { labels: { color: colors.textColor, font: { size: 11, family: 'Inter' } } } },
             scales: {
-              x: { title: { display: true, text: 'Cost (USD)', color: '#71717a' }, ticks: { color: '#71717a' }, grid: { color: '#18181b' } },
-              y: { title: { display: true, text: 'Quality Score (0–100)', color: '#71717a' }, ticks: { color: '#71717a' }, min: 50, max: 105, grid: { color: '#18181b' } }
+              x: { title: { display: true, text: 'Cost (USD)', color: colors.textColor }, ticks: { color: colors.textColor }, grid: { color: colors.gridColor } },
+              y: { title: { display: true, text: 'Quality Score (0–100)', color: colors.textColor }, ticks: { color: colors.textColor }, min: 50, max: 105, grid: { color: colors.gridColor } }
             }
           }
         });
@@ -991,8 +1080,8 @@
             datasets: [{
               label: 'Quality Score',
               data: quals,
-              backgroundColor: '#3f3f46',
-              hoverBackgroundColor: '#6366f1',
+              backgroundColor: colors.barBg,
+              hoverBackgroundColor: colors.barHover,
               borderRadius: 4
             }]
           },
@@ -1001,8 +1090,8 @@
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: {
-              x: { ticks: { color: '#71717a', font: { size: 10 } }, grid: { display: false } },
-              y: { min: 70, max: 100, ticks: { color: '#71717a' }, grid: { color: '#18181b' } }
+              x: { ticks: { color: colors.textColor, font: { size: 10 } }, grid: { display: false } },
+              y: { min: 70, max: 100, ticks: { color: colors.textColor }, grid: { color: colors.gridColor } }
             }
           }
         });
@@ -1012,6 +1101,7 @@
     function initHomeCharts() {
       const ctx = document.getElementById('homeParetoChart');
       if (!ctx || homeParetoChartInstance) return;
+      const colors = getThemeColors();
 
       homeParetoChartInstance = new Chart(ctx, {
         type: 'line',
@@ -1020,7 +1110,7 @@
           datasets: [{
             data: [72.0, 85.0, 98.4, 99.0],
             borderColor: '#6366f1',
-            backgroundColor: 'rgba(99, 102, 241, 0.08)',
+            backgroundColor: colors.chartFill,
             fill: true,
             tension: 0.25,
             pointBackgroundColor: '#6366f1',
@@ -1032,8 +1122,8 @@
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            x: { ticks: { color: '#71717a', font: { size: 10 } }, grid: { display: false } },
-            y: { min: 65, max: 105, ticks: { color: '#71717a', font: { size: 10 } }, grid: { color: '#18181b' } }
+            x: { ticks: { color: colors.textColor, font: { size: 10 } }, grid: { display: false } },
+            y: { min: 65, max: 105, ticks: { color: colors.textColor }, grid: { color: colors.gridColor } }
           }
         }
       });
@@ -1079,6 +1169,7 @@
     });
 
     window.addEventListener('DOMContentLoaded', () => {
+      initTheme();
       fetchMetrics();
       initHomeCharts();
     });
