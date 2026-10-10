@@ -3,355 +3,531 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cost-LLM Router · Model Optimization & Control Plane</title>
+  <title>Cost-LLM Router · Intelligence Routing & Optimization Engine</title>
+  
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
           colors: {
-            zinc: {
-              850: '#1f1f23',
-              900: '#18181b',
-              950: '#09090b',
+            brand: {
+              orange: '#ff6b00',
+              'orange-hover': '#ea580c',
+              blue: '#2563eb',
+              'blue-hover': '#1d4ed8'
             },
-            accent: {
-              DEFAULT: '#6366f1',
-              hover: '#4f46e5',
+            surface: {
+              dark: '#0c0e14',
+              'dark-card': '#12151e',
+              'dark-card-hover': '#171b26',
+              'dark-border': '#1e2230',
+              'dark-sidebar': '#08090e',
+              light: '#f3f5f9',
+              'light-card': '#ffffff',
+              'light-border': '#e2e8f0',
+              'light-sidebar': '#ffffff'
             }
+          },
+          fontFamily: {
+            sans: ['Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif],
+            mono: ['JetBrains Mono', 'Fira Code', ui-monospace, monospace]
           }
         }
       }
     }
   </script>
+
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
-    
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
     * {
       font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'tnum';
     }
-    
+
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-    
-    code, pre, .font-mono {
-      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
-    /* Minimalist theme-responsive nav active states */
+    /* Custom Theme Accent Variables */
+    :root {
+      --accent-color: #2563eb;
+      --accent-hover: #1d4ed8;
+      --accent-glow: rgba(37, 99, 235, 0.25);
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --sidebar-active-bg: #2563eb;
+      --sidebar-active-text: #ffffff;
+    }
+
+    .dark {
+      --accent-color: #ff6b00;
+      --accent-hover: #ea580c;
+      --accent-glow: rgba(255, 107, 0, 0.35);
+      --card-bg: #12151e;
+      --card-border: #1e2230;
+      --sidebar-active-bg: linear-gradient(135deg, #ff6b00 0%, #ea580c 100%);
+      --sidebar-active-text: #ffffff;
+    }
+
+    /* Nav active button styling matching Extej (dark) & Shopeers (light) */
     .nav-btn-active {
-      background-color: #e4e4e7;
-      color: #09090b !important;
+      background: var(--sidebar-active-bg) !important;
+      color: var(--sidebar-active-text) !important;
       font-weight: 600;
+      box-shadow: 0 4px 14px var(--accent-glow);
     }
-    .dark .nav-btn-active {
-      background-color: #27272a !important;
-      color: #fafafa !important;
-      font-weight: 500;
+    .nav-btn-active svg {
+      color: #ffffff !important;
+    }
+    .nav-btn-active .badge-indicator {
+      background-color: rgba(255, 255, 255, 0.25) !important;
+      color: #ffffff !important;
     }
 
+    /* Page switching */
     .page-view { display: none; }
     .page-view.active { display: block; }
 
-    /* Clean custom scrollbar */
+    /* Custom scrollbar */
     ::-webkit-scrollbar {
-      width: 5px;
-      height: 5px;
+      width: 6px;
+      height: 6px;
     }
     ::-webkit-scrollbar-track {
       background: transparent;
     }
     ::-webkit-scrollbar-thumb {
-      background: #d4d4d8;
+      background: #cbd5e1;
       border-radius: 9999px;
     }
     .dark ::-webkit-scrollbar-thumb {
-      background: #27272a;
+      background: #1e2230;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #a1a1aa;
+      background: #94a3b8;
     }
     .dark ::-webkit-scrollbar-thumb:hover {
-      background: #3f3f46;
+      background: #2a3144;
+    }
+
+    /* Soft Glow & Badges */
+    .pill-active-orange {
+      background: #ff6b00;
+      color: #ffffff;
+      box-shadow: 0 2px 10px rgba(255, 107, 0, 0.3);
+    }
+    .pill-active-blue {
+      background: #2563eb;
+      color: #ffffff;
+      box-shadow: 0 2px 10px rgba(37, 99, 235, 0.3);
     }
   </style>
 </head>
-<body class="h-full overflow-hidden flex flex-col bg-zinc-50 text-zinc-900 dark:bg-[#09090b] dark:text-zinc-100 antialiased selection:bg-indigo-500/20 selection:text-indigo-500 transition-colors duration-150">
+<body class="h-full overflow-hidden flex flex-col bg-[#f3f5f9] text-slate-800 dark:bg-[#0c0e14] dark:text-slate-100 antialiased transition-colors duration-200">
 
   <!-- ==================== TOP NAVIGATION BAR ==================== -->
-  <header class="h-14 border-b border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-[#09090b]/95 backdrop-blur z-30 flex-shrink-0 flex items-center justify-between px-5 transition-colors duration-150">
+  <header class="h-16 border-b border-slate-200/80 dark:border-[#1e2230] bg-white/90 dark:bg-[#08090e]/95 backdrop-blur-md z-30 flex-shrink-0 flex items-center justify-between px-6 transition-colors duration-200">
     
-    <!-- Left: Brand -->
-    <div class="flex items-center space-x-3">
-      <div class="w-7 h-7 rounded-lg bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950 flex items-center justify-center font-bold text-xs tracking-tight shadow-sm transition-colors duration-150">
-        CL
+    <!-- Left: Brand / Logo (Inspired by Extej & Shopeers) -->
+    <div class="flex items-center space-x-3.5">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 dark:from-[#ff6b00] dark:to-[#ea580c] text-white flex items-center justify-center font-bold text-sm tracking-tight shadow-md transition-all duration-300">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
       </div>
-      <div class="flex items-center space-x-2.5">
-        <span class="font-semibold text-sm tracking-tight text-zinc-900 dark:text-zinc-100">Cost-LLM</span>
-        <span class="text-zinc-400 dark:text-zinc-600 text-xs">/</span>
-        <span class="text-xs text-zinc-500 dark:text-zinc-400 font-medium">Router & Control Plane</span>
-        <span class="text-[11px] font-mono font-medium px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700/60">v1.2</span>
+      <div>
+        <div class="flex items-center space-x-2">
+          <span class="font-bold text-base tracking-tight text-slate-900 dark:text-white">Cost-LLM</span>
+          <span class="text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-[#ff6b00]/20 text-blue-700 dark:text-[#ff8a34] border border-blue-200 dark:border-[#ff6b00]/30">Router v2.0</span>
+        </div>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block font-medium">Empirical Multi-Tier Optimization Engine</p>
       </div>
     </div>
 
-    <!-- Right: Telemetry & Actions -->
-    <div class="flex items-center space-x-3.5 text-xs">
+    <!-- Center: Search & Shortcut Pill (Shopeers / Extej style) -->
+    <div class="hidden md:flex items-center flex-1 max-w-md mx-8">
+      <div class="relative w-full">
+        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+        <input type="text" id="globalSearchInput" onkeyup="handleGlobalSearch(event)" placeholder="Search requests, models, or policies..." class="w-full pl-10 pr-12 py-2 rounded-xl text-xs bg-slate-100/80 dark:bg-[#12151e] border border-slate-200 dark:border-[#1e2230] text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#ff6b00] transition">
+        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+          <kbd class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-200 dark:bg-[#1e2230] text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-[#2a3144]">⌘K</kbd>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Telemetry, Theme Switcher & Profile -->
+    <div class="flex items-center space-x-3 text-xs">
       
-      <!-- Hardware / Daemon Status -->
-      <div class="flex items-center space-x-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-2.5 py-1.5 rounded-md transition-colors duration-150">
-        <span id="daemonDot" class="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400"></span>
-        <span class="text-zinc-500 dark:text-zinc-400">Engine:</span>
-        <span id="headerOllamaStatus" class="font-medium text-zinc-800 dark:text-zinc-200">Checking...</span>
+      <!-- Real-time Engine Daemon Pill -->
+      <div class="flex items-center space-x-2 bg-slate-100 dark:bg-[#12151e] border border-slate-200 dark:border-[#1e2230] px-3 py-1.5 rounded-xl transition">
+        <span id="daemonDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span class="text-slate-500 dark:text-slate-400 hidden sm:inline">Engine:</span>
+        <span id="headerOllamaStatus" class="font-semibold text-slate-800 dark:text-slate-200">Local RTX 5050 · Ready</span>
       </div>
 
-      <!-- Quick Metrics Summary -->
-      <div class="hidden md:flex items-center space-x-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-3 py-1.5 rounded-md font-mono text-[11px] transition-colors duration-150">
+      <!-- Quick Savings Metric -->
+      <div class="hidden lg:flex items-center space-x-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 px-3 py-1.5 rounded-xl font-mono text-[11px]">
         <div>
-          <span class="text-zinc-500">Savings:</span>
-          <span id="headerSavingsPct" class="font-semibold text-emerald-600 dark:text-emerald-400 ml-1">0.0%</span>
+          <span class="text-emerald-700 dark:text-emerald-400 font-medium">Saved:</span>
+          <span id="headerSavingsPct" class="font-bold text-emerald-600 dark:text-emerald-300 ml-1">0.0%</span>
         </div>
-        <span class="text-zinc-300 dark:text-zinc-700">·</span>
-        <div>
-          <span class="text-zinc-500">Saved:</span>
-          <span id="headerSavingsUsd" class="font-semibold text-zinc-800 dark:text-zinc-200 ml-1">$0.0000</span>
-        </div>
+        <span class="text-emerald-300 dark:text-emerald-700">·</span>
+        <div id="headerSavingsUsd" class="font-semibold text-slate-800 dark:text-slate-200">$0.0000</div>
       </div>
 
       <!-- Theme Switcher (Dark / Light) -->
-      <button onclick="toggleTheme()" id="themeToggleBtn" class="p-1.5 rounded-md text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 transition-colors" title="Toggle theme (Light / Dark)">
-        <!-- Sun icon (shown in dark mode) -->
-        <svg id="themeIconSun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-        <!-- Moon icon (shown in light mode) -->
-        <svg id="themeIconMoon" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+      <button onclick="toggleTheme()" id="themeToggleBtn" class="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#171b26] border border-slate-200 dark:border-[#1e2230] transition shadow-sm" title="Toggle theme (Light / Dark)">
+        <!-- Sun icon (for dark mode) -->
+        <svg id="themeIconSun" class="w-4 h-4 hidden text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        <!-- Moon icon (for light mode) -->
+        <svg id="themeIconMoon" class="w-4 h-4 hidden text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
       </button>
 
-      <!-- Quick Action -->
-      <button onclick="switchPage('playground')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-3 py-1.5 rounded-md text-xs transition shadow-sm">
-        New Request
+      <!-- Primary Action Button -->
+      <button onclick="switchPage('playground')" class="bg-blue-600 hover:bg-blue-700 dark:bg-[#ff6b00] dark:hover:bg-[#ea580c] text-white font-semibold px-3.5 py-2 rounded-xl text-xs transition shadow-sm flex items-center space-x-1.5">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+        <span>New Query</span>
       </button>
 
-      <!-- GitHub Link -->
-      <a href="https://github.com/iamthekavin/Cost-LLM" target="_blank" class="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 p-1.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition" title="View Source on GitHub">
-        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
-      </a>
+      <!-- User / Hardware Profile Pill (Extej / Shopeers style) -->
+      <div class="hidden sm:flex items-center space-x-2.5 pl-2 border-l border-slate-200 dark:border-[#1e2230]">
+        <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-[#1a1e2c] border border-slate-300 dark:border-[#2a3144] flex items-center justify-center text-xs font-bold text-slate-700 dark:text-slate-200 overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" alt="Avatar" class="w-full h-full object-cover" onerror="this.src=''; this.innerText='KL';">
+        </div>
+        <div class="text-left hidden xl:block">
+          <div class="text-xs font-semibold text-slate-900 dark:text-slate-100 leading-tight">Engineering Lead</div>
+          <div class="text-[10px] text-slate-400 font-mono">RTX 5050 Active</div>
+        </div>
+      </div>
+
     </div>
   </header>
 
   <!-- ==================== MAIN WORKSPACE ==================== -->
   <div class="flex-1 flex overflow-hidden">
 
-    <!-- ==================== SIDEBAR ==================== -->
-    <aside class="w-56 border-r border-zinc-200 dark:border-zinc-800 bg-zinc-100/70 dark:bg-[#0c0d12] flex-shrink-0 flex flex-col justify-between p-3 transition-colors duration-150">
+    <!-- ==================== SIDEBAR (Extej / Shopeers Styled) ==================== -->
+    <aside class="w-64 border-r border-slate-200/80 dark:border-[#1e2230] bg-white dark:bg-[#08090e] flex-shrink-0 flex flex-col justify-between p-4 transition-colors duration-200 overflow-y-auto">
       
-      <div class="space-y-4">
-        <!-- Main Navigation -->
+      <div class="space-y-6">
+        
+        <!-- SECTION: CORE WORKBENCH -->
         <div>
-          <div class="px-2.5 mb-1.5 text-[11px] font-medium text-zinc-500 uppercase tracking-wider">Workspace</div>
-          <nav class="space-y-0.5 text-xs font-medium">
-            <button onclick="switchPage('home')" id="nav-home" class="w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded-md transition text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60 nav-btn-active">
-              <svg class="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-              <span>Overview</span>
+          <div class="px-3 mb-2 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+            Workspace
+          </div>
+          <nav class="space-y-1 text-xs font-medium">
+            <button onclick="switchPage('home')" id="nav-home" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#12151e] nav-btn-active">
+              <div class="flex items-center space-x-3">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                <span>Dashboard</span>
+              </div>
+              <span class="badge-indicator text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-slate-200 dark:bg-[#1e2230] text-slate-600 dark:text-slate-400">Live</span>
             </button>
-            <button onclick="switchPage('playground')" id="nav-playground" class="w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded-md transition text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60">
-              <svg class="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"/></svg>
-              <span>Playground</span>
+
+            <button onclick="switchPage('playground')" id="nav-playground" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#12151e]">
+              <div class="flex items-center space-x-3">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"/></svg>
+                <span>Router Playground</span>
+              </div>
+              <span class="badge-indicator text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-slate-200 dark:bg-[#1e2230] text-slate-600 dark:text-slate-400">Test</span>
             </button>
-            <button onclick="switchPage('benchmark')" id="nav-benchmark" class="w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded-md transition text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60">
-              <svg class="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-              <span>Benchmarks</span>
+
+            <button onclick="switchPage('benchmark')" id="nav-benchmark" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#12151e]">
+              <div class="flex items-center space-x-3">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                <span>Benchmarks</span>
+              </div>
+              <span class="badge-indicator text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-slate-200 dark:bg-[#1e2230] text-slate-600 dark:text-slate-400">Pareto</span>
             </button>
-            <button onclick="switchPage('audit')" id="nav-audit" class="w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded-md transition text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60">
-              <svg class="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
-              <span>Audit Logs</span>
+
+            <button onclick="switchPage('audit')" id="nav-audit" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#12151e]">
+              <div class="flex items-center space-x-3">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                <span>Audit Logs</span>
+              </div>
+              <span class="badge-indicator text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-slate-200 dark:bg-[#1e2230] text-slate-600 dark:text-slate-400">Trace</span>
             </button>
-            <button onclick="switchPage('models')" id="nav-models" class="w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded-md transition text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60">
-              <svg class="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-              <span>Models & Rates</span>
+
+            <button onclick="switchPage('models')" id="nav-models" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#12151e]">
+              <div class="flex items-center space-x-3">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                <span>Models & Rates</span>
+              </div>
+              <span class="badge-indicator text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-slate-200 dark:bg-[#1e2230] text-slate-600 dark:text-slate-400">4 Tiers</span>
             </button>
-            <button onclick="switchPage('settings')" id="nav-settings" class="w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded-md transition text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60">
-              <svg class="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-              <span>Policies</span>
+
+            <button onclick="switchPage('settings')" id="nav-settings" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#12151e]">
+              <div class="flex items-center space-x-3">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span>Policies & Config</span>
+              </div>
+              <span class="badge-indicator text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-slate-200 dark:bg-[#1e2230] text-slate-600 dark:text-slate-400">Rules</span>
             </button>
           </nav>
         </div>
 
-        <!-- Sample Workloads -->
+        <!-- SECTION: QUICK WORKLOAD PRESETS -->
         <div>
-          <div class="px-2.5 mb-1.5 text-[11px] font-medium text-zinc-500 uppercase tracking-wider">Sample Queries</div>
-          <div class="space-y-1 text-xs">
-            <button onclick="loadSample(1)" class="w-full text-left px-2.5 py-1.5 rounded-md hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 truncate transition flex items-center justify-between">
-              <span>Entity Extraction</span>
-              <span class="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-medium">$0.00</span>
+          <div class="px-3 mb-2 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+            Quick Scenarios
+          </div>
+          <div class="space-y-1.5 text-xs">
+            <button onclick="loadSample(1)" class="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-[#12151e] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 truncate transition flex items-center justify-between group">
+              <span class="truncate">Entity Extraction</span>
+              <span class="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/40">$0.00</span>
             </button>
-            <button onclick="loadSample(2)" class="w-full text-left px-2.5 py-1.5 rounded-md hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 truncate transition flex items-center justify-between">
-              <span>Ticket Triage</span>
-              <span class="text-[10px] font-mono text-zinc-400 dark:text-zinc-500">Tier 2</span>
+            <button onclick="loadSample(2)" class="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-[#12151e] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 truncate transition flex items-center justify-between group">
+              <span class="truncate">Ticket Triage</span>
+              <span class="text-[10px] font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-[#1e2230] px-1.5 py-0.5 rounded">Tier 2</span>
             </button>
-            <button onclick="loadSample(3)" class="w-full text-left px-2.5 py-1.5 rounded-md hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 truncate transition flex items-center justify-between">
-              <span>Python Rate Limiter</span>
-              <span class="text-[10px] font-mono text-zinc-400 dark:text-zinc-500">Tier 3</span>
+            <button onclick="loadSample(3)" class="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-[#12151e] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 truncate transition flex items-center justify-between group">
+              <span class="truncate">Python Rate Limiter</span>
+              <span class="text-[10px] font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-[#1e2230] px-1.5 py-0.5 rounded">Tier 3</span>
             </button>
-            <button onclick="loadSample(4)" class="w-full text-left px-2.5 py-1.5 rounded-md hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 truncate transition flex items-center justify-between">
-              <span>Monopoly Welfare Math</span>
-              <span class="text-[10px] font-mono text-zinc-400 dark:text-zinc-500">Tier 4</span>
+            <button onclick="loadSample(4)" class="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-[#12151e] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 truncate transition flex items-center justify-between group">
+              <span class="truncate">Monopoly Welfare Math</span>
+              <span class="text-[10px] font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-[#1e2230] px-1.5 py-0.5 rounded">Tier 4</span>
             </button>
-            <button onclick="loadSample(5)" class="w-full text-left px-2.5 py-1.5 rounded-md hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 truncate transition flex items-center justify-between">
-              <span>Compound Request</span>
-              <span class="text-[10px] font-mono text-indigo-600 dark:text-indigo-400 font-medium">Split</span>
+            <button onclick="loadSample(5)" class="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-[#12151e] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 truncate transition flex items-center justify-between group">
+              <span class="truncate">Compound Request</span>
+              <span class="text-[10px] font-mono font-bold text-blue-600 dark:text-[#ff8a34] bg-blue-50 dark:bg-[#ff6b00]/10 px-1.5 py-0.5 rounded border border-blue-200 dark:border-[#ff6b00]/30">Split</span>
             </button>
           </div>
         </div>
+
       </div>
 
-      <!-- Footer Hardware Spec -->
-      <div class="p-2.5 rounded-lg bg-zinc-200/60 dark:bg-zinc-900/70 border border-zinc-300 dark:border-zinc-800 text-[11px] font-mono space-y-1 text-zinc-600 dark:text-zinc-400 transition-colors duration-150">
-        <div class="flex items-center justify-between text-zinc-800 dark:text-zinc-300 font-semibold">
-          <span>Local Engine</span>
-          <span class="text-emerald-600 dark:text-emerald-400">● Live</span>
+      <!-- Bottom Hardware Card (Shopeers promo style / Extej hardware status) -->
+      <div class="mt-6 p-3.5 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 dark:from-[#12151e] dark:to-[#171b26] border border-slate-800 dark:border-[#2a3144] text-white shadow-md relative overflow-hidden">
+        <div class="absolute -right-3 -top-3 w-16 h-16 bg-blue-600/10 dark:bg-[#ff6b00]/10 rounded-full blur-xl pointer-events-none"></div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold tracking-tight text-white flex items-center space-x-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span>Local GPU Node</span>
+          </span>
+          <span class="text-[10px] font-mono bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/30">CUDA 12</span>
         </div>
-        <div class="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">RTX 5050 · llama3.2:3b</div>
-        <div class="text-[10px] text-zinc-400 dark:text-zinc-500">CUDA 12.0 · $0.00 / token</div>
+        <div class="text-[11px] text-slate-300 font-mono truncate">NVIDIA RTX 5050 · 8GB</div>
+        <div class="text-[10px] text-slate-400 mt-1">Ollama Llama-3.2-3B · $0.00/tok</div>
       </div>
 
     </aside>
 
     <!-- ==================== MAIN VIEWPORT ==================== -->
-    <main class="flex-1 overflow-y-auto p-6 space-y-6 bg-zinc-50 dark:bg-[#09090b] transition-colors duration-150">
+    <main class="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 bg-[#f3f5f9] dark:bg-[#0c0e14] transition-colors duration-200">
 
-      <!-- ==================== PAGE: OVERVIEW (HOME) ==================== -->
-      <section id="page-home" class="page-view active space-y-6 max-w-6xl mx-auto">
+      <!-- ==================== PAGE: DASHBOARD (HOME) ==================== -->
+      <section id="page-home" class="page-view active space-y-8 max-w-7xl mx-auto">
         
-        <!-- Header Title -->
-        <div class="border-b border-zinc-200 dark:border-zinc-800 pb-5">
-          <h1 class="text-xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">System Overview</h1>
-          <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Real-time LLM cost optimization, routing policies, and hardware performance metrics.</p>
+        <!-- HERO BANNER (Directly inspired by Extej Ordinals banner) -->
+        <div class="p-6 md:p-8 rounded-3xl bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 dark:from-[#11141e] dark:via-[#131724] dark:to-[#0a0c12] border border-slate-800 dark:border-[#1e2230] text-white shadow-xl relative overflow-hidden">
+          <div class="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-blue-600/15 dark:from-[#ff6b00]/15 to-transparent pointer-events-none"></div>
+          
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center relative z-10">
+            <!-- Left Hero Content -->
+            <div class="lg:col-span-8 space-y-4">
+              <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/10 text-white/90 text-xs font-medium backdrop-blur-sm border border-white/10">
+                <span class="w-2 h-2 rounded-full bg-blue-400 dark:bg-[#ff6b00]"></span>
+                <span>Active Routing Engine</span>
+              </div>
+              <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight text-white">
+                Intelligent LLM Cost Router & Orchestration
+              </h1>
+              <p class="text-sm text-slate-300 max-w-2xl leading-relaxed">
+                Autonomous prompt complexity classification, multi-part task decomposition, and dynamic zero-cost routing to local RTX 5050 GPU before falling back to frontier cloud models.
+              </p>
+              
+              <!-- Action Buttons (Extej style) -->
+              <div class="flex flex-wrap gap-3 pt-2">
+                <button onclick="switchPage('playground')" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 dark:bg-[#ff6b00] dark:hover:bg-[#ea580c] text-white font-semibold text-xs transition shadow-lg shadow-blue-600/30 dark:shadow-[#ff6b00]/30 flex items-center space-x-2">
+                  <span>Launch Router Workbench</span>
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                </button>
+                <button onclick="runBenchmarkSuite()" class="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs border border-white/20 transition backdrop-blur-sm flex items-center space-x-2">
+                  <span>Run Empirical Benchmark</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Right Hero Card / Live Hardware Spec (Extej graphic badge style) -->
+            <div class="lg:col-span-4 bg-white/5 dark:bg-[#171b26]/80 p-5 rounded-2xl border border-white/10 dark:border-[#2a3144] backdrop-blur-md space-y-3 font-mono text-xs">
+              <div class="flex items-center justify-between text-slate-400 text-[11px]">
+                <span>ON-PREMISE ENGINE</span>
+                <span class="text-emerald-400 font-bold">ONLINE</span>
+              </div>
+              <div class="text-base font-bold text-white font-sans">NVIDIA GeForce RTX 5050</div>
+              <div class="space-y-1.5 text-[11px] text-slate-300 border-t border-white/10 pt-2.5">
+                <div class="flex justify-between">
+                  <span class="text-slate-400">VRAM Budget:</span>
+                  <span class="font-semibold text-white">8GB GDDR6</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Local Model:</span>
+                  <span class="font-semibold text-emerald-400">llama3.2:3b</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Token Cost:</span>
+                  <span class="font-bold text-emerald-400">$0.00 / 1M tokens</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- 4 Metric Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <!-- 4 TOP KPI METRIC CARDS (Directly inspired by Shopeers) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
           
-          <div class="p-4 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none transition-colors duration-150">
-            <div class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Cost Reduction</div>
-            <div id="statSavingsPct" class="text-2xl font-bold text-emerald-600 dark:text-emerald-400 font-mono mt-1">0.0%</div>
-            <div class="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1">Vs. o1-preview baseline</div>
-          </div>
-
-          <div class="p-4 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none transition-colors duration-150">
-            <div class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Cumulative Savings</div>
-            <div id="statSavingsUsd" class="text-2xl font-bold text-zinc-900 dark:text-zinc-100 font-mono mt-1">$0.0000</div>
-            <div class="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1">Total spend avoided</div>
-          </div>
-
-          <div class="p-4 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none transition-colors duration-150">
-            <div class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Local Zero-Cost Tasks</div>
-            <div id="statLocalRequests" class="text-2xl font-bold text-zinc-900 dark:text-zinc-100 font-mono mt-1">0</div>
-            <div class="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1">Processed on RTX 5050 GPU</div>
-          </div>
-
-          <div class="p-4 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none transition-colors duration-150">
-            <div class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Total Queries Routed</div>
-            <div id="statTotalRequests" class="text-2xl font-bold text-zinc-900 dark:text-zinc-100 font-mono mt-1">0</div>
-            <div class="text-[11px] text-zinc-400 dark:text-zinc-500 mt-1">Across all 4 model tiers</div>
-          </div>
-
-        </div>
-
-        <!-- Architecture Flow & Strategy Comparison -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          
-          <!-- Routing Mechanics -->
-          <div class="lg:col-span-2 p-5 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none space-y-4 transition-colors duration-150">
+          <!-- Card 1: Cost Reduction -->
+          <div class="p-5 rounded-2xl bg-white dark:bg-[#12151e] border border-slate-200/80 dark:border-[#1e2230] shadow-sm hover:shadow-md transition-all duration-200 relative">
             <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">Cost Reduction</span>
+              <div class="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+              </div>
+            </div>
+            <div id="statSavingsPct" class="text-2xl md:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 font-mono mt-2">0.0%</div>
+            <div class="flex items-center space-x-1.5 mt-2">
+              <span class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded">▲ Pareto</span>
+              <span class="text-[11px] text-slate-400">vs o1-preview baseline</span>
+            </div>
+          </div>
+
+          <!-- Card 2: Cumulative Savings -->
+          <div class="p-5 rounded-2xl bg-white dark:bg-[#12151e] border border-slate-200/80 dark:border-[#1e2230] shadow-sm hover:shadow-md transition-all duration-200">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">Cumulative Savings</span>
+              <div class="w-8 h-8 rounded-xl bg-blue-50 dark:bg-[#ff6b00]/10 text-blue-600 dark:text-[#ff8a34] flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+            </div>
+            <div id="statSavingsUsd" class="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white font-mono mt-2">$0.0000</div>
+            <div class="flex items-center space-x-1.5 mt-2">
+              <span class="text-[11px] font-semibold text-blue-600 dark:text-[#ff8a34] bg-blue-50 dark:bg-[#ff6b00]/10 px-1.5 py-0.5 rounded">▲ Net</span>
+              <span class="text-[11px] text-slate-400">Total spend avoided</span>
+            </div>
+          </div>
+
+          <!-- Card 3: Local GPU Requests -->
+          <div class="p-5 rounded-2xl bg-white dark:bg-[#12151e] border border-slate-200/80 dark:border-[#1e2230] shadow-sm hover:shadow-md transition-all duration-200">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">Local GPU Tasks</span>
+              <div class="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
+              </div>
+            </div>
+            <div id="statLocalRequests" class="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white font-mono mt-2">0</div>
+            <div class="flex items-center space-x-1.5 mt-2">
+              <span class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded">$0.00 Cost</span>
+              <span class="text-[11px] text-slate-400">Processed on RTX 5050</span>
+            </div>
+          </div>
+
+          <!-- Card 4: Total Routed Queries -->
+          <div class="p-5 rounded-2xl bg-white dark:bg-[#12151e] border border-slate-200/80 dark:border-[#1e2230] shadow-sm hover:shadow-md transition-all duration-200">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Queries</span>
+              <div class="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 1.5 3 3.5 3h9c2 0 3.5-1 3.5-3V7c0-2-1.5-3-3.5-3h-9C5.5 4 4 5 4 7zm0 4h16M9 4v7"/></svg>
+              </div>
+            </div>
+            <div id="statTotalRequests" class="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white font-mono mt-2">0</div>
+            <div class="flex items-center space-x-1.5 mt-2">
+              <span class="text-[11px] font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 px-1.5 py-0.5 rounded">All Tiers</span>
+              <span class="text-[11px] text-slate-400">Through 4 model tiers</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- CHARTS & ARCHITECTURE SECTION (Shopeers Total Profit + Most Active Day cards) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          <!-- Left: Quality vs Cost Pareto Curve (8 Cols) -->
+          <div class="lg:col-span-8 p-6 rounded-2xl bg-white dark:bg-[#12151e] border border-slate-200/80 dark:border-[#1e2230] shadow-sm space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#1e2230]">
               <div>
-                <h2 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Routing Decision Architecture</h2>
-                <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">How requests are evaluated, split, and dispatched across model tiers.</p>
+                <h2 class="text-base font-bold text-slate-900 dark:text-white">Quality Retention vs. Cost Reduction</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Dynamic routing achieves 98.4% frontier quality retention at up to 88% cost savings.</p>
               </div>
-              <span class="text-[11px] font-mono text-zinc-400 dark:text-zinc-500">Autonomous</span>
+              <span class="text-xs font-mono font-medium px-2 py-1 rounded-lg bg-slate-100 dark:bg-[#171b26] text-slate-600 dark:text-slate-300">Pareto Frontier</span>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs pt-1">
-              <div class="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 space-y-1.5 transition-colors duration-150">
-                <div class="font-medium text-zinc-800 dark:text-zinc-200">1. Complexity Analysis</div>
-                <p class="text-zinc-500 dark:text-zinc-400 text-[11px] leading-relaxed">Extracts syntax features, reasoning tokens, and PII to score prompt difficulty in range [0.05, 0.99].</p>
-              </div>
-
-              <div class="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 space-y-1.5 transition-colors duration-150">
-                <div class="font-medium text-zinc-800 dark:text-zinc-200">2. Request Decomposition</div>
-                <p class="text-zinc-500 dark:text-zinc-400 text-[11px] leading-relaxed">Splits compound prompts into isolated subtasks, routing extraction locally and reasoning to cloud.</p>
-              </div>
-
-              <div class="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 space-y-1.5 transition-colors duration-150">
-                <div class="font-medium text-zinc-800 dark:text-zinc-200">3. Result Provenance</div>
-                <p class="text-zinc-500 dark:text-zinc-400 text-[11px] leading-relaxed">Aggregates responses with audit traces, exact token accounting, and cost comparison.</p>
-              </div>
+            <div class="h-64 relative">
+              <canvas id="homeParetoChart"></canvas>
             </div>
 
-            <!-- Empirical Curve -->
-            <div class="pt-3 border-t border-zinc-200 dark:border-zinc-800">
-              <div class="text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-2">Quality Retention vs Strategy Cost</div>
-              <div class="h-48 relative">
-                <canvas id="homeParetoChart"></canvas>
+            <!-- Model Tier Breakdown Pills (Shopeers customer category style) -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-slate-100 dark:border-[#1e2230] text-xs">
+              <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-[#0c0e14] border-l-4 border-emerald-500">
+                <div class="text-[10px] text-slate-400 font-medium">TIER 1 (LOCAL)</div>
+                <div class="font-bold text-slate-800 dark:text-slate-200">llama3.2:3b</div>
+                <div class="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono font-semibold">$0.00 / 1M</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-[#0c0e14] border-l-4 border-blue-500">
+                <div class="text-[10px] text-slate-400 font-medium">TIER 2 (CHEAP)</div>
+                <div class="font-bold text-slate-800 dark:text-slate-200">gpt-4o-mini</div>
+                <div class="text-[11px] text-slate-600 dark:text-slate-400 font-mono font-semibold">$0.15 / 1M</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-[#0c0e14] border-l-4 border-purple-500">
+                <div class="text-[10px] text-slate-400 font-medium">TIER 3 (BALANCED)</div>
+                <div class="font-bold text-slate-800 dark:text-slate-200">gpt-4o</div>
+                <div class="text-[11px] text-slate-600 dark:text-slate-400 font-mono font-semibold">$2.50 / 1M</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-[#0c0e14] border-l-4 border-rose-500">
+                <div class="text-[10px] text-slate-400 font-medium">TIER 4 (FRONTIER)</div>
+                <div class="font-bold text-slate-800 dark:text-slate-200">o1-preview</div>
+                <div class="text-[11px] text-slate-600 dark:text-slate-400 font-mono font-semibold">$15.00 / 1M</div>
               </div>
             </div>
           </div>
 
-          <!-- Model Tier Quick Table -->
-          <div class="p-5 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none space-y-3.5 transition-colors duration-150">
-            <h2 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Configured Model Tiers</h2>
+          <!-- Right: Decision Pipeline (4 Cols) -->
+          <div class="lg:col-span-4 p-6 rounded-2xl bg-white dark:bg-[#12151e] border border-slate-200/80 dark:border-[#1e2230] shadow-sm space-y-4">
+            <h2 class="text-base font-bold text-slate-900 dark:text-white">Autonomous Routing Pipeline</h2>
             
-            <div class="space-y-2.5 text-xs font-mono">
-              <div class="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between transition-colors duration-150">
-                <div>
-                  <div class="font-semibold text-zinc-800 dark:text-zinc-200">Tier 1: Local</div>
-                  <div class="text-[10px] text-zinc-500">llama3.2:3b (Ollama)</div>
+            <div class="space-y-3 text-xs">
+              <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0c0e14] border border-slate-200/80 dark:border-[#1e2230] space-y-1">
+                <div class="flex items-center space-x-2 font-semibold text-slate-900 dark:text-slate-100">
+                  <span class="w-5 h-5 rounded-full bg-blue-100 dark:bg-[#ff6b00]/20 text-blue-600 dark:text-[#ff8a34] flex items-center justify-center text-[10px]">1</span>
+                  <span>Feature Extraction</span>
                 </div>
-                <div class="text-right">
-                  <div class="text-emerald-600 dark:text-emerald-400 font-bold">$0.00</div>
-                  <div class="text-[10px] text-zinc-400 dark:text-zinc-500">0.00 / 1M</div>
-                </div>
+                <p class="text-slate-500 dark:text-slate-400 text-[11px] pl-7 leading-relaxed">
+                  Extracts code blocks, reasoning terms, constraints & token counts to calculate prompt difficulty.
+                </p>
               </div>
 
-              <div class="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between transition-colors duration-150">
-                <div>
-                  <div class="font-semibold text-zinc-800 dark:text-zinc-200">Tier 2: Low-Cost</div>
-                  <div class="text-[10px] text-zinc-500">gpt-4o-mini</div>
+              <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0c0e14] border border-slate-200/80 dark:border-[#1e2230] space-y-1">
+                <div class="flex items-center space-x-2 font-semibold text-slate-900 dark:text-slate-100">
+                  <span class="w-5 h-5 rounded-full bg-blue-100 dark:bg-[#ff6b00]/20 text-blue-600 dark:text-[#ff8a34] flex items-center justify-center text-[10px]">2</span>
+                  <span>Compound Decomposition</span>
                 </div>
-                <div class="text-right">
-                  <div class="text-zinc-700 dark:text-zinc-300">$0.15</div>
-                  <div class="text-[10px] text-zinc-400 dark:text-zinc-500">0.60 / 1M</div>
-                </div>
+                <p class="text-slate-500 dark:text-slate-400 text-[11px] pl-7 leading-relaxed">
+                  Deconstructs complex prompts into isolated subtasks, dispatching simple subtasks locally ($0) and reasoning to cloud.
+                </p>
               </div>
 
-              <div class="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between transition-colors duration-150">
-                <div>
-                  <div class="font-semibold text-zinc-800 dark:text-zinc-200">Tier 3: Balanced</div>
-                  <div class="text-[10px] text-zinc-500">gpt-4o</div>
+              <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-[#0c0e14] border border-slate-200/80 dark:border-[#1e2230] space-y-1">
+                <div class="flex items-center space-x-2 font-semibold text-slate-900 dark:text-slate-100">
+                  <span class="w-5 h-5 rounded-full bg-blue-100 dark:bg-[#ff6b00]/20 text-blue-600 dark:text-[#ff8a34] flex items-center justify-center text-[10px]">3</span>
+                  <span>Audit Provenance</span>
                 </div>
-                <div class="text-right">
-                  <div class="text-zinc-700 dark:text-zinc-300">$2.50</div>
-                  <div class="text-[10px] text-zinc-400 dark:text-zinc-500">10.00 / 1M</div>
-                </div>
-              </div>
-
-              <div class="p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between transition-colors duration-150">
-                <div>
-                  <div class="font-semibold text-zinc-800 dark:text-zinc-200">Tier 4: Frontier</div>
-                  <div class="text-[10px] text-zinc-500">o1-preview (Baseline)</div>
-                </div>
-                <div class="text-right">
-                  <div class="text-zinc-600 dark:text-zinc-400">$15.00</div>
-                  <div class="text-[10px] text-zinc-400 dark:text-zinc-500">60.00 / 1M</div>
-                </div>
+                <p class="text-slate-500 dark:text-slate-400 text-[11px] pl-7 leading-relaxed">
+                  Computes exact dollar savings vs frontier baseline and streams complete provenance records into telemetry.
+                </p>
               </div>
             </div>
 
-            <button onclick="switchPage('models')" class="w-full text-center text-xs text-indigo-600 dark:text-indigo-400 hover:underline py-1 transition font-medium">
-              View Model Portfolio & Rates &rarr;
+            <button onclick="switchPage('models')" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#171b26] dark:hover:bg-[#1e2434] text-slate-700 dark:text-slate-300 font-semibold text-xs transition text-center">
+              View Full Pricing Schedule &rarr;
             </button>
           </div>
 
@@ -360,48 +536,63 @@
       </section>
 
       <!-- ==================== PAGE: PLAYGROUND ==================== -->
-      <section id="page-playground" class="page-view space-y-5 max-w-6xl mx-auto">
+      <section id="page-playground" class="page-view space-y-6 max-w-7xl mx-auto">
         
-        <div class="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-4">
+        <!-- Header & Category Chips (Extej filter tabs style) -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-[#1e2230]">
           <div>
-            <h1 class="text-xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">Routing Playground</h1>
-            <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Submit single or multi-part queries and observe how the router selects models.</p>
+            <h1 class="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Interactive Router Workbench</h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Submit test queries or select workload categories to observe autonomous model selection.</p>
           </div>
 
-          <!-- Controls Toolbar -->
-          <div class="flex items-center space-x-2 text-xs">
-            <span class="text-zinc-500 dark:text-zinc-400">Policy:</span>
-            <select id="routePolicy" class="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700/80 text-zinc-800 dark:text-zinc-200 rounded-md px-2.5 py-1 text-xs outline-none focus:border-indigo-500 transition-colors duration-150">
-              <option value="balanced" selected>Balanced (Pareto Optimal)</option>
-              <option value="cost_first">Cost-First (Aggressive Local/Cheap)</option>
-              <option value="quality_first">Quality-First (High Performance)</option>
-              <option value="local_only">Local-Only (100% On-Premise $0)</option>
-            </select>
+          <!-- Category Chips / Filter Tabs (Extej ALL, DAO, DEFI style) -->
+          <div class="flex items-center flex-wrap gap-2 text-xs">
+            <button onclick="loadSample(1)" class="px-3 py-1.5 rounded-xl bg-white dark:bg-[#12151e] border border-slate-200 dark:border-[#1e2230] text-slate-700 dark:text-slate-300 hover:border-blue-500 dark:hover:border-[#ff6b00] font-medium transition">Extraction</button>
+            <button onclick="loadSample(2)" class="px-3 py-1.5 rounded-xl bg-white dark:bg-[#12151e] border border-slate-200 dark:border-[#1e2230] text-slate-700 dark:text-slate-300 hover:border-blue-500 dark:hover:border-[#ff6b00] font-medium transition">Triage</button>
+            <button onclick="loadSample(3)" class="px-3 py-1.5 rounded-xl bg-white dark:bg-[#12151e] border border-slate-200 dark:border-[#1e2230] text-slate-700 dark:text-slate-300 hover:border-blue-500 dark:hover:border-[#ff6b00] font-medium transition">Coding</button>
+            <button onclick="loadSample(4)" class="px-3 py-1.5 rounded-xl bg-white dark:bg-[#12151e] border border-slate-200 dark:border-[#1e2230] text-slate-700 dark:text-slate-300 hover:border-blue-500 dark:hover:border-[#ff6b00] font-medium transition">Reasoning</button>
+            <button onclick="loadSample(5)" class="px-3 py-1.5 rounded-xl bg-white dark:bg-[#12151e] border border-slate-200 dark:border-[#1e2230] text-slate-700 dark:text-slate-300 hover:border-blue-500 dark:hover:border-[#ff6b00] font-medium transition">Compound (Split)</button>
           </div>
         </div>
 
-        <!-- Playground Split View -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <!-- Playground Two-Column Workspace -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-          <!-- Left: Input & Tuning (5 Cols) -->
+          <!-- Left Column: Input, Policy, Controls (5 Cols) -->
           <div class="lg:col-span-5 space-y-4">
             
-            <div class="p-4 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none space-y-3.5 transition-colors duration-150">
+            <div class="p-6 rounded-2xl bg-white dark:bg-[#12151e] border border-slate-200/80 dark:border-[#1e2230] shadow-sm space-y-4">
+              
               <div class="flex items-center justify-between text-xs">
-                <label for="promptInput" class="font-medium text-zinc-700 dark:text-zinc-300">Prompt Input</label>
-                <button onclick="clearPrompt()" class="text-zinc-400 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-300 text-[11px] transition">Clear</button>
+                <label for="promptInput" class="font-bold text-slate-800 dark:text-slate-200">Query Prompt</label>
+                <div class="flex items-center space-x-2">
+                  <span class="text-[11px] text-slate-400" id="promptCharCount">0 chars</span>
+                  <span class="text-slate-300 dark:text-slate-600">·</span>
+                  <button onclick="clearPrompt()" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-[11px] transition">Clear</button>
+                </div>
               </div>
 
-              <textarea id="promptInput" rows="7" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-3 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 focus:border-indigo-500 outline-none font-mono leading-relaxed transition" placeholder="Enter prompt here (e.g. 'Extract dates from invoice #9401' or '1. Extract email... 2. Write response...')"></textarea>
+              <textarea id="promptInput" rows="7" oninput="updateCharCount()" class="w-full bg-slate-50 dark:bg-[#0c0e14] border border-slate-200 dark:border-[#1e2230] rounded-xl p-3.5 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#ff6b00] font-mono leading-relaxed transition" placeholder="Enter single or compound prompt here... (e.g. 'Extract contact details from: Alice at alice@cloudcorp.io or call +1-555-0144')"></textarea>
 
-              <!-- Optional Overrides Accordion -->
-              <div class="pt-3 border-t border-zinc-200 dark:border-zinc-800/80 space-y-3 text-xs">
-                <div class="font-medium text-zinc-500 dark:text-zinc-400 text-[11px]">Optional Admin Controls</div>
-                <div class="grid grid-cols-2 gap-2.5">
+              <!-- Policy Selector -->
+              <div class="space-y-1.5">
+                <label class="text-xs font-semibold text-slate-700 dark:text-slate-300 block">Routing Policy</label>
+                <select id="routePolicy" class="w-full bg-slate-50 dark:bg-[#0c0e14] border border-slate-200 dark:border-[#1e2230] text-slate-800 dark:text-slate-200 rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-[#ff6b00] transition">
+                  <option value="balanced" selected>Balanced (Pareto Optimal ~80% Savings)</option>
+                  <option value="cost_first">Cost-First (Aggressive Local & Low-Cost)</option>
+                  <option value="quality_first">Quality-First (Favor Frontier Accuracy)</option>
+                  <option value="local_only">Local-Only (100% On-Premise GPU $0)</option>
+                </select>
+              </div>
+
+              <!-- Overrides Accordion -->
+              <div class="pt-3 border-t border-slate-100 dark:border-[#1e2230] space-y-3 text-xs">
+                <div class="font-bold text-slate-400 text-[11px] uppercase tracking-wider">Overrides</div>
+                <div class="grid grid-cols-2 gap-3">
                   <div>
-                    <label class="text-[11px] text-zinc-500 block mb-1">Model Override:</label>
-                    <select id="overrideModel" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 rounded p-1.5 text-xs outline-none transition-colors duration-150">
-                      <option value="">(Automatic Routing)</option>
+                    <label class="text-[11px] text-slate-500 block mb-1">Model Override:</label>
+                    <select id="overrideModel" class="w-full bg-slate-50 dark:bg-[#0c0e14] border border-slate-200 dark:border-[#1e2230] text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs outline-none transition">
+                      <option value="">(Auto-Route)</option>
                       <option value="llama3.2:3b">Tier 1: llama3.2:3b ($0.00)</option>
                       <option value="gpt-4o-mini">Tier 2: gpt-4o-mini ($0.15)</option>
                       <option value="gpt-4o">Tier 3: gpt-4o ($2.50)</option>
@@ -409,96 +600,97 @@
                     </select>
                   </div>
                   <div>
-                    <label class="text-[11px] text-zinc-500 block mb-1">Decomposition:</label>
-                    <select id="forceDecomp" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 rounded p-1.5 text-xs outline-none transition-colors duration-150">
+                    <label class="text-[11px] text-slate-500 block mb-1">Decomposition:</label>
+                    <select id="forceDecomp" class="w-full bg-slate-50 dark:bg-[#0c0e14] border border-slate-200 dark:border-[#1e2230] text-slate-800 dark:text-slate-200 rounded-lg p-2 text-xs outline-none transition">
                       <option value="auto">Auto-Detect</option>
                       <option value="true">Force Decompose</option>
-                      <option value="false">Force Single-Task</option>
+                      <option value="false">Force Single</option>
                     </select>
                   </div>
                 </div>
               </div>
 
-              <!-- Action Bar -->
-              <div class="pt-3 flex gap-2 text-xs font-medium">
-                <button onclick="previewRoute()" class="px-3.5 py-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 border border-zinc-300 dark:border-transparent transition">
+              <!-- Action Buttons -->
+              <div class="pt-3 flex gap-2.5 text-xs font-semibold">
+                <button onclick="previewRoute()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#171b26] dark:hover:bg-[#1e2434] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-transparent transition">
                   Preview Plan
                 </button>
-                <button onclick="executeRoute()" id="btnSubmitRoute" class="flex-1 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center justify-center space-x-1.5 shadow-sm">
-                  <span>Send Request</span>
-                  <span class="text-[10px] text-indigo-200 dark:text-indigo-300 ml-1 font-mono">Ctrl+Enter</span>
+                <button onclick="executeRoute()" id="btnSubmitRoute" class="flex-1 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 dark:bg-[#ff6b00] dark:hover:bg-[#ea580c] text-white transition flex items-center justify-center space-x-2 shadow-md">
+                  <span>Route & Execute</span>
+                  <span class="text-[10px] text-blue-200 dark:text-[#ffd6ba] font-mono">⌘Enter</span>
                 </button>
               </div>
+
             </div>
 
             <!-- Preview Card -->
-            <div id="previewCard" class="p-4 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none space-y-2.5 text-xs hidden transition-colors duration-150">
+            <div id="previewCard" class="p-5 rounded-2xl bg-white dark:bg-[#12151e] border border-slate-200/80 dark:border-[#1e2230] shadow-sm space-y-3 text-xs hidden">
               <div class="flex items-center justify-between">
-                <span class="font-medium text-zinc-800 dark:text-zinc-300">Analysis Preview</span>
-                <span id="previewScoreBadge" class="font-mono text-[11px] px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400">Score: 0.00</span>
+                <span class="font-bold text-slate-800 dark:text-slate-200">Analysis Preview</span>
+                <span id="previewScoreBadge" class="font-mono text-[11px] font-bold px-2 py-0.5 rounded-lg bg-blue-50 dark:bg-[#ff6b00]/20 text-blue-600 dark:text-[#ff8a34]">Score: 0.00</span>
               </div>
-              <p id="previewPlanText" class="text-zinc-600 dark:text-zinc-400 text-xs"></p>
-              <div id="previewSubtasksList" class="space-y-1.5 pt-2 border-t border-zinc-200 dark:border-zinc-800 text-xs font-mono"></div>
+              <p id="previewPlanText" class="text-slate-600 dark:text-slate-400 text-xs leading-relaxed"></p>
+              <div id="previewSubtasksList" class="space-y-2 pt-2 border-t border-slate-100 dark:border-[#1e2230] text-xs font-mono"></div>
             </div>
 
           </div>
 
-          <!-- Right: Execution Response (7 Cols) -->
+          <!-- Right Column: Response Output & Telemetry (7 Cols) -->
           <div class="lg:col-span-7 space-y-4">
             
-            <div class="p-5 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none space-y-4 transition-colors duration-150">
+            <div class="p-6 rounded-2xl bg-white dark:bg-[#12151e] border border-slate-200/80 dark:border-[#1e2230] shadow-sm space-y-5">
               
-              <!-- Metrics Ribbon -->
-              <div class="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-zinc-200 dark:border-zinc-800">
+              <!-- Metrics Ribbon (Shopeers / Extej style) -->
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pb-4 border-b border-slate-100 dark:border-[#1e2230]">
                 <div>
-                  <div class="text-[11px] text-zinc-500 font-mono">SELECTED MODEL</div>
-                  <div id="resultModelName" class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 font-mono mt-0.5">Ready for query</div>
+                  <span class="text-[10px] font-mono uppercase text-slate-400 block font-semibold">SELECTED MODEL</span>
+                  <div id="resultModelName" class="text-xs font-bold text-slate-900 dark:text-white font-mono mt-0.5 truncate">Ready for query</div>
                 </div>
-
-                <div class="flex items-center space-x-4 font-mono text-xs">
-                  <div class="text-right">
-                    <span class="text-[10px] text-zinc-400 dark:text-zinc-500 block">ACTUAL COST</span>
-                    <span id="resultActualCost" class="font-medium text-zinc-800 dark:text-zinc-200">$0.000000</span>
-                  </div>
-                  <div class="text-right">
-                    <span class="text-[10px] text-zinc-400 dark:text-zinc-500 block">SAVED</span>
-                    <span id="resultSavingsPct" class="font-bold text-emerald-600 dark:text-emerald-400">0.0%</span>
-                  </div>
-                  <div class="text-right">
-                    <span class="text-[10px] text-zinc-400 dark:text-zinc-500 block">LATENCY</span>
-                    <span id="resultLatency" class="text-zinc-600 dark:text-zinc-400">0.0 ms</span>
-                  </div>
+                <div>
+                  <span class="text-[10px] font-mono uppercase text-slate-400 block font-semibold">ACTUAL COST</span>
+                  <span id="resultActualCost" class="text-xs font-bold text-slate-900 dark:text-white font-mono mt-0.5 block">$0.000000</span>
+                </div>
+                <div>
+                  <span class="text-[10px] font-mono uppercase text-slate-400 block font-semibold">SAVINGS</span>
+                  <span id="resultSavingsPct" class="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 font-mono mt-0.5 block">0.0%</span>
+                </div>
+                <div>
+                  <span class="text-[10px] font-mono uppercase text-slate-400 block font-semibold">LATENCY</span>
+                  <span id="resultLatency" class="text-xs font-bold text-slate-600 dark:text-slate-300 font-mono mt-0.5 block">0.0 ms</span>
                 </div>
               </div>
 
               <!-- Output Display -->
-              <div class="space-y-1.5">
-                <div class="flex items-center justify-between text-xs text-zinc-600 dark:text-zinc-400">
-                  <span class="font-medium">Response Content</span>
-                  <button onclick="copyOutput()" id="btnCopy" class="text-zinc-400 hover:text-zinc-800 dark:text-zinc-500 dark:hover:text-zinc-300 text-[11px] transition">Copy</button>
-                </div>
-                <div id="resultOutputContainer" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 rounded-lg p-3.5 text-xs text-zinc-800 dark:text-zinc-200 min-h-[180px] overflow-x-auto leading-relaxed font-sans transition-colors duration-150">
-                  <span class="text-zinc-400 dark:text-zinc-600 italic">Submit a prompt on the left to see live model output, token accounting, and cost savings.</span>
-                </div>
-              </div>
-
-              <!-- Subtasks Breakdown (if compound) -->
-              <div id="subtasksContainer" class="space-y-2.5 pt-3 border-t border-zinc-200 dark:border-zinc-800 hidden">
+              <div class="space-y-2">
                 <div class="flex items-center justify-between text-xs">
-                  <span class="font-medium text-zinc-800 dark:text-zinc-300">Multi-Part Execution Plan</span>
-                  <span id="subtaskCountBadge" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">2 Parts</span>
+                  <span class="font-bold text-slate-800 dark:text-slate-200">Execution Output</span>
+                  <button onclick="copyOutput()" id="btnCopy" class="text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 text-[11px] font-medium transition flex items-center space-x-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <span>Copy Text</span>
+                  </button>
                 </div>
-                <div id="subtasksList" class="space-y-1.5 font-mono text-xs"></div>
+                <div id="resultOutputContainer" class="w-full bg-slate-50 dark:bg-[#0c0e14] border border-slate-200 dark:border-[#1e2230] rounded-xl p-4 text-xs text-slate-800 dark:text-slate-200 min-h-[220px] overflow-x-auto leading-relaxed font-sans">
+                  <span class="text-slate-400 dark:text-slate-600 italic">Submit a prompt on the left or select a quick scenario to inspect live model output and token savings.</span>
+                </div>
               </div>
 
-              <!-- Decision Explanation -->
-              <div class="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-950/70 border border-zinc-200 dark:border-zinc-800/80 space-y-1 text-xs transition-colors duration-150">
-                <div class="flex items-center justify-between text-[11px] text-zinc-400 dark:text-zinc-500 font-mono">
+              <!-- Multi-Part Subtasks Breakdown -->
+              <div id="subtasksContainer" class="space-y-3 pt-3 border-t border-slate-100 dark:border-[#1e2230] hidden">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="font-bold text-slate-800 dark:text-slate-200">Decomposition Subtasks</span>
+                  <span id="subtaskCountBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-100 dark:bg-[#ff6b00]/20 text-blue-700 dark:text-[#ff8a34] font-bold">2 Parts</span>
+                </div>
+                <div id="subtasksList" class="space-y-2 font-mono text-xs"></div>
+              </div>
+
+              <!-- Decision Provenance Explanation -->
+              <div class="p-4 rounded-xl bg-slate-50 dark:bg-[#0c0e14] border border-slate-200/80 dark:border-[#1e2230] space-y-1 text-xs">
+                <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono">
                   <span>DECISION PROVENANCE</span>
                   <span id="resultRequestId">req-idle</span>
                 </div>
-                <p id="resultRationale" class="text-zinc-600 dark:text-zinc-400 text-xs leading-relaxed">
-                  Router will evaluate prompt complexity and route to the most cost-effective capable model.
+                <p id="resultRationale" class="text-slate-600 dark:text-slate-400 text-xs leading-relaxed">
+                  Autonomous classifier scores syntax features, entities, and reasoning complexity to allocate the most cost-effective tier.
                 </p>
               </div>
 
@@ -511,52 +703,50 @@
       </section>
 
       <!-- ==================== PAGE: BENCHMARKS ==================== -->
-      <section id="page-benchmark" class="page-view space-y-6 max-w-6xl mx-auto">
-        <div class="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-4">
+      <section id="page-benchmark" class="page-view space-y-6 max-w-7xl mx-auto">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-[#1e2230]">
           <div>
-            <h1 class="text-xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">Strategy Benchmarking</h1>
-            <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Empirical 4-strategy evaluation matrix on 10 standard enterprise workloads.</p>
+            <h1 class="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Empirical Strategy Benchmarks</h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Rigorous 4-strategy evaluation comparing Always-Local, Always-Cheap, Dynamic Router, and Always-Frontier.</p>
           </div>
-          <button onclick="runBenchmarkSuite()" id="btnRunBenchmark" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-4 py-2 rounded-lg text-xs transition shadow-sm flex items-center space-x-1.5">
+          <button onclick="runBenchmarkSuite()" id="btnRunBenchmark" class="bg-blue-600 hover:bg-blue-700 dark:bg-[#ff6b00] dark:hover:bg-[#ea580c] text-white font-semibold px-4 py-2.5 rounded-xl text-xs transition shadow-md flex items-center space-x-2">
             <span>Execute Benchmark Suite</span>
           </button>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <!-- Pareto Curve -->
-          <div class="p-5 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none space-y-3 transition-colors duration-150">
-            <h2 class="text-xs font-semibold text-zinc-800 dark:text-zinc-300">Pareto Trade-off Matrix (Cost vs Quality)</h2>
-            <div class="h-60 relative">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="p-6 rounded-2xl bg-white dark:bg-[#12151e] border border-slate-200/80 dark:border-[#1e2230] shadow-sm space-y-3">
+            <h2 class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Pareto Trade-Off Matrix (Cost vs Quality)</h2>
+            <div class="h-64 relative">
               <canvas id="benchParetoChart"></canvas>
             </div>
           </div>
-          <!-- Category Retention -->
-          <div class="p-5 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none space-y-3 transition-colors duration-150">
-            <h2 class="text-xs font-semibold text-zinc-800 dark:text-zinc-300">Quality Retention by Task Domain</h2>
-            <div class="h-60 relative">
+          <div class="p-6 rounded-2xl bg-white dark:bg-[#12151e] border border-slate-200/80 dark:border-[#1e2230] shadow-sm space-y-3">
+            <h2 class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Quality Retention by Task Domain</h2>
+            <div class="h-64 relative">
               <canvas id="benchCategoryChart"></canvas>
             </div>
           </div>
         </div>
 
-        <!-- Strategy Table -->
-        <div class="p-5 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none space-y-3 transition-colors duration-150">
-          <h2 class="text-xs font-semibold text-zinc-800 dark:text-zinc-300">Benchmark Performance Matrix</h2>
+        <!-- Strategy Table (Extej / Shopeers Table Styling) -->
+        <div class="p-6 rounded-2xl bg-white dark:bg-[#12151e] border border-slate-200/80 dark:border-[#1e2230] shadow-sm space-y-4">
+          <h2 class="text-sm font-bold text-slate-900 dark:text-white">Comparative Benchmark Results</h2>
           <div class="overflow-x-auto">
             <table class="w-full text-xs font-mono text-left">
               <thead>
-                <tr class="border-b border-zinc-200 dark:border-zinc-800 text-zinc-500 text-[11px]">
-                  <th class="py-2.5 px-3">STRATEGY</th>
-                  <th class="py-2.5 px-3">TOTAL COST</th>
-                  <th class="py-2.5 px-3">COST REDUCTION</th>
-                  <th class="py-2.5 px-3">AVG QUALITY</th>
-                  <th class="py-2.5 px-3">AVG LATENCY</th>
-                  <th class="py-2.5 px-3">EFFICIENCY</th>
+                <tr class="border-b border-slate-200 dark:border-[#1e2230] text-slate-400 text-[11px]">
+                  <th class="py-3 px-4">STRATEGY</th>
+                  <th class="py-3 px-4">TOTAL COST</th>
+                  <th class="py-3 px-4">COST REDUCTION</th>
+                  <th class="py-3 px-4">AVG QUALITY</th>
+                  <th class="py-3 px-4">AVG LATENCY</th>
+                  <th class="py-3 px-4">EFFICIENCY</th>
                 </tr>
               </thead>
-              <tbody id="benchmarkTableBody" class="divide-y divide-zinc-200 dark:divide-zinc-800/60 text-zinc-700 dark:text-zinc-300">
-                <tr class="text-zinc-400 dark:text-zinc-600 italic">
-                  <td colspan="6" class="py-4 text-center">Click "Execute Benchmark Suite" above to run the 4-way comparison.</td>
+              <tbody id="benchmarkTableBody" class="divide-y divide-slate-100 dark:divide-[#1e2230] text-slate-700 dark:text-slate-300">
+                <tr class="text-slate-400 italic">
+                  <td colspan="6" class="py-6 text-center">Click "Execute Benchmark Suite" to compute empirical metrics.</td>
                 </tr>
               </tbody>
             </table>
@@ -564,36 +754,36 @@
         </div>
       </section>
 
-      <!-- ==================== PAGE: AUDIT LOGS ==================== -->
-      <section id="page-audit" class="page-view space-y-5 max-w-6xl mx-auto">
-        <div class="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-4">
+      <!-- ==================== PAGE: AUDIT LOGS (Extej Data Table) ==================== -->
+      <section id="page-audit" class="page-view space-y-6 max-w-7xl mx-auto">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-[#1e2230]">
           <div>
-            <h1 class="text-xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">Audit Logs</h1>
-            <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Ring-buffer audit records of all routed requests, complexity scores, and savings calculations.</p>
+            <h1 class="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Audit Logs & Decisions</h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Full ring-buffer ledger of routing decisions, complexity scores, model selections, and exact token accounting.</p>
           </div>
-          <button onclick="fetchHistory()" class="bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 border border-zinc-300 dark:border-transparent px-3 py-1.5 rounded-md text-xs font-medium transition">
-            Refresh
+          <button onclick="fetchHistory()" class="bg-white hover:bg-slate-100 dark:bg-[#171b26] dark:hover:bg-[#1e2434] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-[#2a3144] px-4 py-2 rounded-xl text-xs font-semibold transition shadow-sm">
+            Refresh Logs
           </button>
         </div>
 
-        <div class="rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none overflow-hidden transition-colors duration-150">
+        <div class="rounded-2xl bg-white dark:bg-[#12151e] border border-slate-200/80 dark:border-[#1e2230] shadow-sm overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full text-xs font-mono text-left">
-              <thead class="bg-zinc-100 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 text-zinc-500 text-[11px]">
+              <thead class="bg-slate-50 dark:bg-[#0c0e14] border-b border-slate-200 dark:border-[#1e2230] text-slate-400 text-[11px]">
                 <tr>
-                  <th class="py-2.5 px-3.5">ID</th>
-                  <th class="py-2.5 px-3.5">PROMPT</th>
-                  <th class="py-2.5 px-3.5">SCORE</th>
-                  <th class="py-2.5 px-3.5">MODEL</th>
-                  <th class="py-2.5 px-3.5">DECOMPOSED</th>
-                  <th class="py-2.5 px-3.5">COST</th>
-                  <th class="py-2.5 px-3.5">SAVINGS</th>
-                  <th class="py-2.5 px-3.5">TIME</th>
+                  <th class="py-3.5 px-4">ID</th>
+                  <th class="py-3.5 px-4">PROMPT</th>
+                  <th class="py-3.5 px-4">COMPLEXITY</th>
+                  <th class="py-3.5 px-4">MODEL</th>
+                  <th class="py-3.5 px-4">DECOMPOSED</th>
+                  <th class="py-3.5 px-4">COST</th>
+                  <th class="py-3.5 px-4">SAVINGS</th>
+                  <th class="py-3.5 px-4">TIME</th>
                 </tr>
               </thead>
-              <tbody id="auditTableBody" class="divide-y divide-zinc-200 dark:divide-zinc-800/60 text-zinc-700 dark:text-zinc-300">
-                <tr class="text-zinc-400 dark:text-zinc-600 italic">
-                  <td colspan="8" class="py-4 text-center">No logs recorded yet.</td>
+              <tbody id="auditTableBody" class="divide-y divide-slate-100 dark:divide-[#1e2230] text-slate-700 dark:text-slate-300">
+                <tr class="text-slate-400 italic">
+                  <td colspan="8" class="py-6 text-center">No logs recorded yet. Run a prompt in the Playground.</td>
                 </tr>
               </tbody>
             </table>
@@ -602,29 +792,29 @@
       </section>
 
       <!-- ==================== PAGE: MODELS & RATES ==================== -->
-      <section id="page-models" class="page-view space-y-5 max-w-6xl mx-auto">
-        <div class="border-b border-zinc-200 dark:border-zinc-800 pb-4">
-          <h1 class="text-xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">Model Registry & Pricing Schedule</h1>
-          <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Official model tier classification, pricing per 1M tokens, and assigned workload scopes.</p>
+      <section id="page-models" class="page-view space-y-6 max-w-7xl mx-auto">
+        <div class="pb-4 border-b border-slate-200 dark:border-[#1e2230]">
+          <h1 class="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Model Registry & Official Rates</h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Multi-tier model portfolio with input/output token pricing per 1M tokens.</p>
         </div>
 
-        <div id="modelsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <!-- Populated by JS -->
+        <div id="modelsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <!-- Populated by JavaScript -->
         </div>
       </section>
 
-      <!-- ==================== PAGE: POLICIES & SETTINGS ==================== -->
-      <section id="page-settings" class="page-view space-y-5 max-w-3xl mx-auto">
-        <div class="border-b border-zinc-200 dark:border-zinc-800 pb-4">
-          <h1 class="text-xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">Routing Policies & Governance</h1>
-          <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Configure default routing thresholds, baseline reference model, and administrative overrides.</p>
+      <!-- ==================== PAGE: POLICIES & CONFIG ==================== -->
+      <section id="page-settings" class="page-view space-y-6 max-w-3xl mx-auto">
+        <div class="pb-4 border-b border-slate-200 dark:border-[#1e2230]">
+          <h1 class="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Routing Policies & Governance</h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Configure default policies, baseline comparison anchor, and decomposition flags.</p>
         </div>
 
-        <div class="p-5 rounded-xl bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 shadow-sm dark:shadow-none space-y-4 text-xs transition-colors duration-150">
+        <div class="p-6 rounded-2xl bg-white dark:bg-[#12151e] border border-slate-200/80 dark:border-[#1e2230] shadow-sm space-y-5 text-xs">
           
           <div class="space-y-1.5">
-            <label class="font-medium text-zinc-800 dark:text-zinc-200 block">Default Routing Policy</label>
-            <select id="settingPolicy" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-md p-2 text-zinc-800 dark:text-zinc-300 outline-none transition-colors duration-150">
+            <label class="font-bold text-slate-800 dark:text-slate-200 block">Default Routing Policy</label>
+            <select id="settingPolicy" class="w-full bg-slate-50 dark:bg-[#0c0e14] border border-slate-200 dark:border-[#1e2230] rounded-xl p-2.5 text-slate-800 dark:text-slate-200 outline-none transition">
               <option value="balanced">Balanced (Pareto Optimal: ~75–85% savings)</option>
               <option value="cost_first">Cost-First (Aggressive Local/Cheap routing)</option>
               <option value="quality_first">Quality-First (High Performance Tier)</option>
@@ -633,27 +823,27 @@
           </div>
 
           <div class="space-y-1.5">
-            <label class="font-medium text-zinc-800 dark:text-zinc-200 block">Baseline Comparison Anchor</label>
-            <select id="settingBaseline" class="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-md p-2 text-zinc-800 dark:text-zinc-300 outline-none transition-colors duration-150">
+            <label class="font-bold text-slate-800 dark:text-slate-200 block">Baseline Comparison Anchor</label>
+            <select id="settingBaseline" class="w-full bg-slate-50 dark:bg-[#0c0e14] border border-slate-200 dark:border-[#1e2230] rounded-xl p-2.5 text-slate-800 dark:text-slate-200 outline-none transition">
               <option value="o1-preview" selected>OpenAI o1-preview ($15.00 prompt / $60.00 completion)</option>
               <option value="gpt-4o">OpenAI GPT-4o ($2.50 prompt / $10.00 completion)</option>
               <option value="claude-3-5-sonnet">Claude 3.5 Sonnet ($3.00 prompt / $15.00 completion)</option>
             </select>
           </div>
 
-          <div class="space-y-2.5 pt-3 border-t border-zinc-200 dark:border-zinc-800">
-            <label class="flex items-center space-x-2.5 cursor-pointer">
-              <input type="checkbox" id="settingDecomp" checked class="w-4 h-4 rounded bg-zinc-50 dark:bg-zinc-950 border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500">
-              <span class="text-zinc-700 dark:text-zinc-300">Enable Automated Multi-Part Request Decomposition</span>
+          <div class="space-y-3 pt-3 border-t border-slate-100 dark:border-[#1e2230]">
+            <label class="flex items-center space-x-3 cursor-pointer">
+              <input type="checkbox" id="settingDecomp" checked class="w-4 h-4 rounded text-blue-600 dark:text-[#ff6b00] focus:ring-0">
+              <span class="text-slate-700 dark:text-slate-300 font-medium">Enable Automated Multi-Part Request Decomposition</span>
             </label>
-            <label class="flex items-center space-x-2.5 cursor-pointer">
-              <input type="checkbox" id="settingOverride" checked class="w-4 h-4 rounded bg-zinc-50 dark:bg-zinc-950 border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500">
-              <span class="text-zinc-700 dark:text-zinc-300">Allow Administrative & User Model Overrides</span>
+            <label class="flex items-center space-x-3 cursor-pointer">
+              <input type="checkbox" id="settingOverride" checked class="w-4 h-4 rounded text-blue-600 dark:text-[#ff6b00] focus:ring-0">
+              <span class="text-slate-700 dark:text-slate-300 font-medium">Allow Administrative & User Model Overrides</span>
             </label>
           </div>
 
-          <div class="pt-3 border-t border-zinc-200 dark:border-zinc-800 flex justify-end">
-            <button onclick="saveSettings()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-4 py-2 rounded-md transition shadow-sm">
+          <div class="pt-3 border-t border-slate-100 dark:border-[#1e2230] flex justify-end">
+            <button onclick="saveSettings()" class="bg-blue-600 hover:bg-blue-700 dark:bg-[#ff6b00] dark:hover:bg-[#ea580c] text-white font-semibold px-5 py-2.5 rounded-xl transition shadow-md">
               Save Configuration
             </button>
           </div>
@@ -712,11 +902,12 @@
     function getThemeColors() {
       const isDark = document.documentElement.classList.contains('dark');
       return {
-        gridColor: isDark ? '#18181b' : '#e4e4e7',
-        textColor: isDark ? '#71717a' : '#71717a',
-        chartFill: isDark ? 'rgba(99, 102, 241, 0.08)' : 'rgba(99, 102, 241, 0.12)',
-        barBg: isDark ? '#27272a' : '#e4e4e7',
-        barHover: '#6366f1'
+        gridColor: isDark ? '#1e2230' : '#e2e8f0',
+        textColor: isDark ? '#94a3b8' : '#64748b',
+        accentColor: isDark ? '#ff6b00' : '#2563eb',
+        chartFill: isDark ? 'rgba(255, 107, 0, 0.12)' : 'rgba(37, 99, 235, 0.12)',
+        barBg: isDark ? '#1e2230' : '#e2e8f0',
+        barHover: isDark ? '#ff6b00' : '#2563eb'
       };
     }
 
@@ -728,6 +919,8 @@
         homeParetoChartInstance.options.scales.x.ticks.color = colors.textColor;
         homeParetoChartInstance.options.scales.y.grid.color = colors.gridColor;
         homeParetoChartInstance.options.scales.y.ticks.color = colors.textColor;
+        homeParetoChartInstance.data.datasets[0].borderColor = colors.accentColor;
+        homeParetoChartInstance.data.datasets[0].pointBackgroundColor = colors.accentColor;
         homeParetoChartInstance.data.datasets[0].backgroundColor = colors.chartFill;
         homeParetoChartInstance.update();
       }
@@ -747,6 +940,7 @@
         benchCategoryChartInstance.options.scales.y.ticks.color = colors.textColor;
         benchCategoryChartInstance.options.scales.x.ticks.color = colors.textColor;
         benchCategoryChartInstance.data.datasets[0].backgroundColor = colors.barBg;
+        benchCategoryChartInstance.data.datasets[0].hoverBackgroundColor = colors.barHover;
         benchCategoryChartInstance.update();
       }
     }
@@ -768,13 +962,37 @@
 
     function loadSample(num) {
       switchPage('playground');
-      document.getElementById('promptInput').value = SAMPLE_PROMPTS[num];
+      const input = document.getElementById('promptInput');
+      input.value = SAMPLE_PROMPTS[num];
+      updateCharCount();
       previewRoute();
+    }
+
+    function updateCharCount() {
+      const count = document.getElementById('promptInput').value.length;
+      document.getElementById('promptCharCount').textContent = `${count} chars`;
     }
 
     function clearPrompt() {
       document.getElementById('promptInput').value = '';
+      updateCharCount();
       document.getElementById('previewCard').classList.add('hidden');
+    }
+
+    function handleGlobalSearch(event) {
+      if (event.key === 'Enter') {
+        const query = event.target.value.toLowerCase().trim();
+        if (query.includes('bench')) switchPage('benchmark');
+        else if (query.includes('model') || query.includes('rate')) switchPage('models');
+        else if (query.includes('log') || query.includes('audit')) switchPage('audit');
+        else if (query.includes('rule') || query.includes('policy') || query.includes('setting')) switchPage('settings');
+        else {
+          switchPage('playground');
+          document.getElementById('promptInput').value = event.target.value;
+          updateCharCount();
+          previewRoute();
+        }
+      }
     }
 
     async function fetchMetrics() {
@@ -796,10 +1014,10 @@
         const dotEl = document.getElementById('daemonDot');
         if (mData.local_daemon_active) {
           statusEl.textContent = 'Local RTX 5050 · Ready';
-          dotEl.className = 'w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400';
+          dotEl.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500';
         } else {
           statusEl.textContent = 'Local Engine Starting...';
-          dotEl.className = 'w-2 h-2 rounded-full bg-amber-500 dark:bg-amber-400 animate-pulse';
+          dotEl.className = 'w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse';
         }
       } catch (e) {
         console.error('Error fetching metrics:', e);
@@ -825,15 +1043,15 @@
         card.classList.remove('hidden');
 
         document.getElementById('previewScoreBadge').textContent = `Score: ${data.analysis.complexity_score.toFixed(2)}`;
-        document.getElementById('previewPlanText').textContent = `${data.preview_plan} (${data.analysis.primary_intent})`;
+        document.getElementById('previewPlanText').textContent = `${data.preview_plan} (Intent: ${data.analysis.primary_intent})`;
 
         const list = document.getElementById('previewSubtasksList');
         list.innerHTML = '';
         if (data.subtasks && data.subtasks.length > 0) {
           data.subtasks.forEach(st => {
             const div = document.createElement('div');
-            div.className = 'flex justify-between items-center bg-zinc-100 dark:bg-zinc-950 p-2 rounded border border-zinc-200 dark:border-zinc-800 transition-colors duration-150';
-            div.innerHTML = `<span class="text-zinc-800 dark:text-zinc-200">${st.title}</span><span class="text-indigo-600 dark:text-indigo-400 font-semibold">${st.selected_model}</span>`;
+            div.className = 'flex justify-between items-center bg-slate-50 dark:bg-[#0c0e14] p-2.5 rounded-xl border border-slate-200 dark:border-[#1e2230]';
+            div.innerHTML = `<span class="text-slate-800 dark:text-slate-200">${st.title}</span><span class="text-blue-600 dark:text-[#ff8a34] font-bold">${st.selected_model}</span>`;
             list.appendChild(div);
           });
         }
@@ -851,7 +1069,7 @@
 
       const btn = document.getElementById('btnSubmitRoute');
       btn.disabled = true;
-      btn.innerHTML = `<span class="animate-spin mr-1">·</span> Routing...`;
+      btn.innerHTML = `<span class="animate-spin mr-1">●</span> Routing...`;
 
       const policy = document.getElementById('routePolicy').value;
       const overrideModel = document.getElementById('overrideModel').value || null;
@@ -876,7 +1094,7 @@
         const primaryModel = subtasks.length > 0 ? subtasks[0].selected_model : 'Multi-Model';
         const primaryTier = subtasks.length > 0 ? subtasks[0].selected_tier : 'aggregated';
 
-        document.getElementById('resultModelName').textContent = `${primaryModel} · ${primaryTier.toUpperCase()}`;
+        document.getElementById('resultModelName').textContent = `${primaryModel} (${primaryTier.toUpperCase()})`;
         document.getElementById('resultActualCost').textContent = `$${data.cost_summary.total_cost_usd.toFixed(6)}`;
         document.getElementById('resultSavingsPct').textContent = `${data.cost_summary.reduction_percentage.toFixed(1)}%`;
         document.getElementById('resultLatency').textContent = `${data.total_latency_ms.toFixed(1)} ms`;
@@ -884,7 +1102,7 @@
         document.getElementById('resultRationale').textContent = data.trace.explanation;
 
         const outputContainer = document.getElementById('resultOutputContainer');
-        outputContainer.innerHTML = `<pre class="whitespace-pre-wrap font-sans text-xs text-zinc-900 dark:text-zinc-100">${escapeHtml(data.final_output)}</pre>`;
+        outputContainer.innerHTML = `<pre class="whitespace-pre-wrap font-sans text-xs text-slate-800 dark:text-slate-100">${escapeHtml(data.final_output)}</pre>`;
 
         const subtasksContainer = document.getElementById('subtasksContainer');
         const subtasksList = document.getElementById('subtasksList');
@@ -896,15 +1114,15 @@
 
           subtasks.forEach(st => {
             const item = document.createElement('div');
-            item.className = 'p-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-xs font-mono flex items-center justify-between transition-colors duration-150';
+            item.className = 'p-3 rounded-xl bg-slate-50 dark:bg-[#0c0e14] border border-slate-200 dark:border-[#1e2230] text-xs font-mono flex items-center justify-between';
             item.innerHTML = `
               <div>
-                <span class="font-medium text-zinc-800 dark:text-zinc-200">${st.title}</span>
-                <span class="text-zinc-500 text-[10px] block">${st.intent} (Complexity: ${st.complexity_score.toFixed(2)})</span>
+                <span class="font-bold text-slate-800 dark:text-slate-200">${st.title}</span>
+                <span class="text-slate-500 text-[10px] block">${st.intent} (Complexity: ${st.complexity_score.toFixed(2)})</span>
               </div>
               <div class="text-right">
-                <span class="px-2 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-indigo-700 dark:text-indigo-300 font-medium">${st.selected_model}</span>
-                <span class="text-[10px] text-zinc-400 dark:text-zinc-500 block mt-0.5">${st.selected_tier}</span>
+                <span class="px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-[#ff6b00]/20 text-blue-700 dark:text-[#ff8a34] font-bold">${st.selected_model}</span>
+                <span class="text-[10px] text-slate-400 block mt-0.5">${st.selected_tier}</span>
               </div>
             `;
             subtasksList.appendChild(item);
@@ -919,7 +1137,7 @@
         alert('Router error: ' + e.message);
       } finally {
         btn.disabled = false;
-        btn.innerHTML = `<span>Send Request</span><span class="text-[10px] text-indigo-200 dark:text-indigo-300 ml-1 font-mono">Ctrl+Enter</span>`;
+        btn.innerHTML = `<span>Route & Execute</span><span class="text-[10px] text-blue-200 dark:text-[#ffd6ba] font-mono">⌘Enter</span>`;
       }
     }
 
@@ -929,8 +1147,10 @@
       if (!text) return;
       navigator.clipboard.writeText(text).then(() => {
         const btn = document.getElementById('btnCopy');
-        btn.textContent = 'Copied!';
-        setTimeout(() => btn.textContent = 'Copy', 1500);
+        btn.innerHTML = `<span class="text-emerald-500">Copied!</span>`;
+        setTimeout(() => {
+          btn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg><span>Copy Text</span>`;
+        }, 1500);
       });
     }
 
@@ -944,23 +1164,23 @@
         data.models.forEach(m => {
           const isLoc = m.is_local;
           const card = document.createElement('div');
-          card.className = `p-4 rounded-xl bg-white dark:bg-zinc-900/60 border ${isLoc ? 'border-emerald-500/50 bg-emerald-50/20 dark:bg-zinc-900/80' : 'border-zinc-200 dark:border-zinc-800'} text-xs space-y-2.5 font-mono shadow-sm dark:shadow-none transition-colors duration-150`;
+          card.className = `p-5 rounded-2xl bg-white dark:bg-[#12151e] border ${isLoc ? 'border-emerald-500/60 ring-2 ring-emerald-500/10' : 'border-slate-200/80 dark:border-[#1e2230]'} text-xs space-y-3 font-mono shadow-sm hover:shadow-md transition`;
           card.innerHTML = `
             <div class="flex items-center justify-between">
-              <span class="font-semibold text-zinc-900 dark:text-zinc-100">${m.name}</span>
-              <span class="px-2 py-0.5 rounded text-[10px] font-medium uppercase ${isLoc ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700/60'}">
+              <span class="font-bold text-sm text-slate-900 dark:text-white">${m.name}</span>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${isLoc ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/50' : 'bg-slate-100 dark:bg-[#1e2230] text-slate-700 dark:text-slate-300'}">
                 ${m.tier}
               </span>
             </div>
-            <p class="text-zinc-600 dark:text-zinc-400 text-[11px] font-sans leading-relaxed">${m.description}</p>
-            <div class="pt-2.5 border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center text-[11px]">
+            <p class="text-slate-500 dark:text-slate-400 text-xs font-sans leading-relaxed">${m.description}</p>
+            <div class="pt-3 border-t border-slate-100 dark:border-[#1e2230] flex justify-between items-center text-xs">
               <div>
-                <span class="text-zinc-400 dark:text-zinc-500 text-[10px] block">PROMPT / 1M</span>
-                <span class="font-medium ${isLoc ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-800 dark:text-zinc-200'}">$${m.prompt_per_1m.toFixed(2)}</span>
+                <span class="text-slate-400 text-[10px] block">PROMPT / 1M</span>
+                <span class="font-bold ${isLoc ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'}">$${m.prompt_per_1m.toFixed(2)}</span>
               </div>
               <div class="text-right">
-                <span class="text-zinc-400 dark:text-zinc-500 text-[10px] block">COMPLETION / 1M</span>
-                <span class="font-medium ${isLoc ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-800 dark:text-zinc-200'}">$${m.completion_per_1m.toFixed(2)}</span>
+                <span class="text-slate-400 text-[10px] block">COMPLETION / 1M</span>
+                <span class="font-bold ${isLoc ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'}">$${m.completion_per_1m.toFixed(2)}</span>
               </div>
             </div>
           `;
@@ -979,23 +1199,23 @@
         tbody.innerHTML = '';
 
         if (!data || data.length === 0) {
-          tbody.innerHTML = '<tr class="text-zinc-400 dark:text-zinc-600 italic"><td colspan="8" class="py-4 text-center">No logs recorded yet.</td></tr>';
+          tbody.innerHTML = '<tr class="text-slate-400 italic"><td colspan="8" class="py-6 text-center">No logs recorded yet.</td></tr>';
           return;
         }
 
         data.forEach(item => {
           const sub = item.subtasks && item.subtasks.length > 0 ? item.subtasks[0] : null;
           const tr = document.createElement('tr');
-          tr.className = 'hover:bg-zinc-100/60 dark:hover:bg-zinc-800/30 transition';
+          tr.className = 'hover:bg-slate-50 dark:hover:bg-[#171b26] transition';
           tr.innerHTML = `
-            <td class="py-2.5 px-3.5 text-zinc-500 dark:text-zinc-400 font-mono">${item.request_id}</td>
-            <td class="py-2.5 px-3.5 max-w-xs truncate text-zinc-800 dark:text-zinc-200" title="${escapeHtml(item.original_prompt)}">${escapeHtml(item.original_prompt)}</td>
-            <td class="py-2.5 px-3.5 text-indigo-600 dark:text-indigo-400 font-mono font-medium">${item.overall_complexity.toFixed(2)}</td>
-            <td class="py-2.5 px-3.5 font-medium text-zinc-800 dark:text-zinc-200">${sub ? sub.selected_model : 'aggregated'}</td>
-            <td class="py-2.5 px-3.5"><span class="px-1.5 py-0.5 rounded text-[10px] ${item.is_decomposed ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300' : 'text-zinc-400 dark:text-zinc-500'}">${item.is_decomposed ? 'YES' : 'NO'}</span></td>
-            <td class="py-2.5 px-3.5 text-zinc-800 dark:text-zinc-200 font-mono">$${item.cost_summary ? item.cost_summary.total_cost_usd.toFixed(6) : '0.00'}</td>
-            <td class="py-2.5 px-3.5 font-bold text-emerald-600 dark:text-emerald-400 font-mono">${item.cost_summary ? item.cost_summary.reduction_percentage.toFixed(1) : '0.0'}%</td>
-            <td class="py-2.5 px-3.5 text-zinc-400 dark:text-zinc-500 text-[10px] font-mono">${item.timestamp ? item.timestamp.split('T')[1].split('.')[0] : ''}</td>
+            <td class="py-3 px-4 text-slate-500 dark:text-slate-400 font-mono text-[11px]">${item.request_id}</td>
+            <td class="py-3 px-4 max-w-xs truncate text-slate-800 dark:text-slate-200" title="${escapeHtml(item.original_prompt)}">${escapeHtml(item.original_prompt)}</td>
+            <td class="py-3 px-4 text-blue-600 dark:text-[#ff8a34] font-mono font-bold">${item.overall_complexity.toFixed(2)}</td>
+            <td class="py-3 px-4 font-semibold text-slate-900 dark:text-white">${sub ? sub.selected_model : 'aggregated'}</td>
+            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${item.is_decomposed ? 'bg-blue-100 text-blue-800 dark:bg-[#ff6b00]/20 dark:text-[#ff8a34]' : 'bg-slate-100 text-slate-500 dark:bg-[#1e2230] dark:text-slate-400'}">${item.is_decomposed ? 'SPLIT' : 'SINGLE'}</span></td>
+            <td class="py-3 px-4 text-slate-900 dark:text-white font-mono">$${item.cost_summary ? item.cost_summary.total_cost_usd.toFixed(6) : '0.00'}</td>
+            <td class="py-3 px-4 font-extrabold text-emerald-600 dark:text-emerald-400 font-mono">${item.cost_summary ? item.cost_summary.reduction_percentage.toFixed(1) : '0.0'}%</td>
+            <td class="py-3 px-4 text-slate-400 text-[11px] font-mono">${item.timestamp ? item.timestamp.split('T')[1].split('.')[0] : ''}</td>
           `;
           tbody.appendChild(tr);
         });
@@ -1007,7 +1227,7 @@
     async function runBenchmarkSuite() {
       const btn = document.getElementById('btnRunBenchmark');
       btn.disabled = true;
-      btn.innerHTML = `<span class="animate-spin mr-1">·</span> Evaluating...`;
+      btn.innerHTML = `<span class="animate-spin mr-1">●</span> Evaluating...`;
 
       try {
         const res = await fetch('/api/benchmark/run', { method: 'POST' });
@@ -1019,14 +1239,14 @@
         const summary = data.summary_by_strategy || {};
         for (const [key, s] of Object.entries(summary)) {
           const tr = document.createElement('tr');
-          tr.className = 'hover:bg-zinc-100/60 dark:hover:bg-zinc-800/30 transition';
+          tr.className = 'hover:bg-slate-50 dark:hover:bg-[#171b26] transition';
           tr.innerHTML = `
-            <td class="py-2.5 px-3 font-semibold text-zinc-900 dark:text-zinc-100">${s.strategy_name}</td>
-            <td class="py-2.5 px-3 text-zinc-800 dark:text-zinc-300 font-mono">$${s.total_cost_usd.toFixed(6)}</td>
-            <td class="py-2.5 px-3 font-bold text-emerald-600 dark:text-emerald-400 font-mono">${s.cost_reduction_pct.toFixed(1)}%</td>
-            <td class="py-2.5 px-3 text-zinc-800 dark:text-zinc-200 font-mono">${s.avg_quality_score.toFixed(1)} / 100</td>
-            <td class="py-2.5 px-3 text-zinc-500 dark:text-zinc-400 font-mono">${s.avg_latency_ms.toFixed(0)} ms</td>
-            <td class="py-2.5 px-3 text-indigo-600 dark:text-indigo-400 font-mono">${s.cost_efficiency_ratio}</td>
+            <td class="py-3 px-4 font-bold text-slate-900 dark:text-white">${s.strategy_name}</td>
+            <td class="py-3 px-4 text-slate-800 dark:text-slate-200 font-mono">$${s.total_cost_usd.toFixed(6)}</td>
+            <td class="py-3 px-4 font-extrabold text-emerald-600 dark:text-emerald-400 font-mono">${s.cost_reduction_pct.toFixed(1)}%</td>
+            <td class="py-3 px-4 text-slate-900 dark:text-white font-mono">${s.avg_quality_score.toFixed(1)} / 100</td>
+            <td class="py-3 px-4 text-slate-500 font-mono">${s.avg_latency_ms.toFixed(0)} ms</td>
+            <td class="py-3 px-4 text-blue-600 dark:text-[#ff8a34] font-mono font-bold">${s.cost_efficiency_ratio}</td>
           `;
           tbody.appendChild(tr);
         }
@@ -1051,8 +1271,8 @@
             datasets: paretoPoints.map((p, idx) => ({
               label: p.strategy,
               data: [{ x: p.cost_usd, y: p.quality }],
-              backgroundColor: idx === 3 ? '#6366f1' : (idx === 0 ? '#f43f5e' : (idx === 1 ? '#10b981' : '#a1a1aa')),
-              pointRadius: idx === 3 ? 8 : 5,
+              backgroundColor: idx === 3 ? colors.accentColor : (idx === 0 ? '#f43f5e' : (idx === 1 ? '#10b981' : '#a1a1aa')),
+              pointRadius: idx === 3 ? 9 : 6,
             }))
           },
           options: {
@@ -1082,7 +1302,7 @@
               data: quals,
               backgroundColor: colors.barBg,
               hoverBackgroundColor: colors.barHover,
-              borderRadius: 4
+              borderRadius: 6
             }]
           },
           options: {
@@ -1109,12 +1329,12 @@
           labels: ['Always Local ($0.00)', 'Always Cheap ($0.15)', 'Dynamic Router', 'Always Frontier ($15.00)'],
           datasets: [{
             data: [72.0, 85.0, 98.4, 99.0],
-            borderColor: '#6366f1',
+            borderColor: colors.accentColor,
             backgroundColor: colors.chartFill,
             fill: true,
-            tension: 0.25,
-            pointBackgroundColor: '#6366f1',
-            pointRadius: 4
+            tension: 0.3,
+            pointBackgroundColor: colors.accentColor,
+            pointRadius: 5
           }]
         },
         options: {
@@ -1122,7 +1342,7 @@
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            x: { ticks: { color: colors.textColor, font: { size: 10 } }, grid: { display: false } },
+            x: { ticks: { color: colors.textColor, font: { size: 11 } }, grid: { display: false } },
             y: { min: 65, max: 105, ticks: { color: colors.textColor }, grid: { color: colors.gridColor } }
           }
         }
@@ -1151,13 +1371,13 @@
             allow_admin_override: override
           })
         });
-        alert('Configuration saved.');
+        alert('Configuration saved successfully.');
       } catch (e) {
         alert('Error: ' + e.message);
       }
     }
 
-    // Keyboard shortcut (Ctrl+Enter / Cmd+Enter to execute)
+    // Keyboard shortcut (Cmd/Ctrl + Enter to route)
     document.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         const input = document.getElementById('promptInput');
@@ -1165,6 +1385,11 @@
           e.preventDefault();
           executeRoute();
         }
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        const searchInput = document.getElementById('globalSearchInput');
+        if (searchInput) searchInput.focus();
       }
     });
 
